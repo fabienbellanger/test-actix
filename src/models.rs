@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 pub struct Info {
@@ -12,7 +12,7 @@ pub struct Status {
     pub message: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct Task {
     pub id: u32,
     pub name: &'static str,

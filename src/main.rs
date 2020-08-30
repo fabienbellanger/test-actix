@@ -14,7 +14,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::new("%s | %r | %Ts | %{User-Agent}i | %a"))
             .route("/", web::get().to(handlers::index))
             .service(handlers::hello)
-            .service(handlers::big_json)
+            .service(handlers::test)
+            .service(web::scope("/v1").service(handlers::big_json))
     })
     .bind("127.0.0.1:8088")?
     .run()

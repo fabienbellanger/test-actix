@@ -13,6 +13,11 @@ async fn hello(info: web::Path<models::Info>) -> impl Responder {
     ))
 }
 
+#[get("/test/{string}/{int}")]
+async fn test(info: web::Path<(String, i32)>) -> impl Responder {
+    HttpResponse::Ok().body(format!("Test: string={} and int={}.", info.0, info.1))
+}
+
 #[get("/big-json")]
 async fn big_json() -> Result<web::Json<Vec<models::Task>>, ()> {
     let mut v: Vec<models::Task> = Vec::new();
