@@ -7,10 +7,10 @@ use serde::Serialize;
 use serde_json::json;
 
 #[derive(Serialize)]
-pub struct AppErrorMessage {
-    pub code: u16,
-    pub error: String,
-    pub message: String,
+struct AppErrorMessage {
+    code: u16,
+    error: String,
+    message: String,
 }
 
 #[derive(Fail, Debug)]
@@ -57,6 +57,7 @@ impl error::ResponseError for AppError {
     }
 }
 
+// TODO: A factoriser !
 pub fn render_404<B>(mut res: dev::ServiceResponse<B>) -> Result<ErrorHandlerResponse<B>, error::Error> {
     let err = json!(AppErrorMessage{
         code: StatusCode::NOT_FOUND.as_u16(),
