@@ -1,8 +1,10 @@
 mod handlers;
 mod models;
+mod errors;
 
+use actix_web::middleware::errhandlers::ErrorHandlers;
 use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpServer};
+use actix_web::{web, App, HttpServer, http};
 use env_logger::Env;
 
 #[actix_rt::main]
@@ -11,13 +13,19 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
+            .wrap(
+                ErrorHandlers::new()
+                    .handler(http::StatusCode::NOT_FOUND, errors::render_404)
+            )
             .wrap(Logger::new("%s | %r | %Ts | %{User-Agent}i | %a"))
             .route("/", web::get().to(handlers::index))
+            .service(handlers::internal_error)
+            .service(handlers::not_found)
             .service(handlers::hello)
             .service(handlers::test)
             .service(web::scope("/v1").service(handlers::big_json))
     })
-    .bind("127.0.0.1:8088")?
+    .bind("127.0.0.1:8089")?
     .run()
     .await
 }
