@@ -1,5 +1,5 @@
-use crate::models;
 use crate::errors::AppError;
+use crate::models;
 use actix_web::{get, web, HttpResponse, Responder};
 
 pub async fn index() -> Result<impl Responder, AppError> {
@@ -8,12 +8,16 @@ pub async fn index() -> Result<impl Responder, AppError> {
 
 #[get("/internal-error")]
 pub async fn internal_error() -> Result<&'static str, AppError> {
-    Err(AppError::InternalError{ message: "an unexpected error".to_owned() })
+    Err(AppError::InternalError {
+        message: "an unexpected error".to_owned(),
+    })
 }
 
 #[get("/not-found")]
 pub async fn not_found() -> Result<&'static str, AppError> {
-    Err(AppError::NotFound{ message: "".to_owned() })
+    Err(AppError::NotFound {
+        message: "".to_owned(),
+    })
 }
 
 #[get("/hello/{name}/{age}")]
@@ -40,4 +44,14 @@ async fn big_json() -> Result<web::Json<Vec<models::Task>>, AppError> {
         });
     }
     Ok(web::Json(v))
+}
+
+#[get("/big-json-stream")]
+async fn big_json_stream() -> HttpResponse {
+    let stream = models::TaskStream {
+        next: 0,
+        buf: Default::default(),
+    };
+
+    HttpResponse::Ok().streaming(stream)
 }
