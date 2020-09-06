@@ -46,12 +46,15 @@ async fn big_json() -> Result<web::Json<Vec<models::Task>>, AppError> {
     Ok(web::Json(v))
 }
 
-#[get("/big-json-stream")]
-async fn big_json_stream() -> HttpResponse {
+#[get("/big-json-stream/{number}")]
+async fn big_json_stream(number: web::Path<u32>) -> HttpResponse {
     let stream = models::TaskStream {
+        number: *number,
         next: 0,
         buf: Default::default(),
     };
 
-    HttpResponse::Ok().streaming(stream)
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .streaming(stream)
 }
