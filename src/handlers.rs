@@ -29,8 +29,8 @@ async fn hello(info: web::Path<models::Info>) -> Result<impl Responder, AppError
 }
 
 #[get("/test/{string}/{int}")]
-async fn test(info: web::Path<(String, i32)>) -> Result<impl Responder, AppError> {
-    Ok(HttpResponse::Ok().body(format!("Test: string={} and int={}.", info.0, info.1)))
+async fn test(web::Path((string, int)): web::Path<(String, i32)>) -> Result<impl Responder, AppError> {
+    Ok(HttpResponse::Ok().body(format!("Test: string={} and int={}.", string, int)))
 }
 
 #[get("/big-json")]
