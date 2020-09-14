@@ -1,28 +1,26 @@
+mod config;
 mod errors;
 mod handlers;
 mod models;
-mod setting;
 
+use crate::config::Config;
 use actix_web::middleware::errhandlers::ErrorHandlers;
 use actix_web::middleware::Logger;
 use actix_web::{http, web, App, HttpServer};
 use env_logger::Env;
-use dotenv;
-use config;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Load configuration
     // ------------------
-    dotenv::dotenv().ok();
+    let settings = Config::load().expect("Cannot find .env file");
 
-    let mut s = config::Config::new();
-    s.merge(config::Environment::default()).unwrap();
+    // Logger
+    // ------
+    env_logger::from_env(Env::default().default_filter_or(&settings.server_log_level)).init();
 
-    let server_settings: setting::Settings = s.try_into().unwrap();
-
-    env_logger::from_env(Env::default().default_filter_or("info")).init();
-
+    // Start server
+    // ------------
     HttpServer::new(|| {
         App::new()
             .wrap(ErrorHandlers::new().handler(http::StatusCode::NOT_FOUND, errors::render_404))
@@ -38,9 +36,7 @@ async fn main() -> std::io::Result<()> {
                     .service(handlers::big_json_stream),
             )
     })
-    .bind(format!("{}:{}", 
-        server_settings.server_url,
-        server_settings.server_port))?
+    .bind(format!("{}:{}", settings.server_url, settings.server_port))?
     .run()
     .await
 }
