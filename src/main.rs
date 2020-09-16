@@ -29,8 +29,13 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::new("%s | %r | %Ts | %{User-Agent}i | %a"))
             .wrap(
                 Cors::new()
-                    .allowed_origin("*")
-                    .allowed_methods(vec!["GET", "POST", "PATCH", "PUT", "DELETE", "HEAD"])
+                    // .allowed_origin("*")
+                    .allowed_methods(vec![
+                        "GET", "POST", "PATCH", "PUT", "DELETE", "HEAD", "OPTIONS",
+                    ])
+                    .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+                    .allowed_header(http::header::CONTENT_TYPE)
+                    .supports_credentials()
                     .max_age(3600)
                     .finish(),
             )
