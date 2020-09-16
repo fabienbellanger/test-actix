@@ -35,6 +35,15 @@ async fn test(
     Ok(HttpResponse::Ok().body(format!("Test: string={} and int={}.", string, int)))
 }
 
+#[get("/query")]
+async fn query(info: web::Query<models::Query>) -> Result<impl Responder, AppError> {
+    let username = match &info.username {
+        Some(v) => &v,
+        None => "",
+    };
+    Ok(HttpResponse::Ok().body(format!("Test query: username={}.", username)))
+}
+
 #[get("/big-json")]
 async fn big_json() -> Result<web::Json<Vec<models::Task>>, AppError> {
     let mut v: Vec<models::Task> = Vec::new();

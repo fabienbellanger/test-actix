@@ -9,6 +9,11 @@ pub struct Info {
     pub age: u32,
 }
 
+#[derive(Deserialize)]
+pub struct Query {
+    pub username: Option<String>,
+}
+
 #[derive(Serialize)]
 pub struct Status {
     pub status: &'static str,
