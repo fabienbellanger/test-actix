@@ -44,6 +44,11 @@ async fn query(info: web::Query<models::Query>) -> Result<impl Responder, AppErr
     Ok(HttpResponse::Ok().body(format!("Test query: username={}.", username)))
 }
 
+#[get("/json")]
+async fn json(info: web::Json<models::Info>) -> impl Responder {
+    format!("Welcome {} - {}!", info.name, info.age)
+}
+
 #[get("/big-json")]
 async fn big_json() -> Result<web::Json<Vec<models::Task>>, AppError> {
     let mut v: Vec<models::Task> = Vec::new();
