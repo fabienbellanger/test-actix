@@ -29,6 +29,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(ErrorHandlers::new().handler(http::StatusCode::NOT_FOUND, errors::render_404))
             .wrap(Logger::new("%s | %r | %Ts | %{User-Agent}i | %a"))
             .wrap(middlewares::SayHi)
+            .wrap(middlewares::timer::Timer)
             .wrap(
                 Cors::new()
                     // .allowed_origin("*")
