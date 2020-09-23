@@ -1,6 +1,7 @@
 mod config;
 mod errors;
 mod handlers;
+mod middlewares;
 mod models;
 mod routes;
 
@@ -27,6 +28,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(ErrorHandlers::new().handler(http::StatusCode::NOT_FOUND, errors::render_404))
             .wrap(Logger::new("%s | %r | %Ts | %{User-Agent}i | %a"))
+            .wrap(middlewares::SayHi)
             .wrap(
                 Cors::new()
                     // .allowed_origin("*")
