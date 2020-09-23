@@ -8,7 +8,7 @@ use crate::config::Config;
 use actix_cors::Cors;
 use actix_web::middleware::errhandlers::ErrorHandlers;
 use actix_web::middleware::Logger;
-use actix_web::{http, App, HttpServer};
+use actix_web::{guard, http, web, App, HttpServer};
 use env_logger::Env;
 
 #[actix_web::main]
@@ -38,6 +38,14 @@ async fn main() -> std::io::Result<()> {
                     .supports_credentials()
                     .max_age(3600)
                     .finish(),
+            )
+            .service(
+                web::resource("/path").route(
+                    web::route()
+                        .guard(guard::Get())
+                        .guard(guard::Header("content-type", "plain/text"))
+                        .to(handlers::index),
+                ),
             )
             .configure(routes::web)
             .configure(routes::api)

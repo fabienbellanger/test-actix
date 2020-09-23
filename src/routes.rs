@@ -15,6 +15,7 @@ pub fn web(cfg: &mut web::ServiceConfig) {
         .service(handlers::not_found)
         .service(handlers::hello)
         .service(handlers::test)
+        .service(handlers::request)
         .service(handlers::json)
         .service(handlers::query);
 }

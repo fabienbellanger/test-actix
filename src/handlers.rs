@@ -1,6 +1,6 @@
 use crate::errors::AppError;
 use crate::models;
-use actix_web::{get, web, HttpResponse, Responder};
+use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 
 pub async fn index() -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().body("Hello world!"))
@@ -32,6 +32,19 @@ async fn hello(info: web::Path<models::Info>) -> Result<impl Responder, AppError
 async fn test(
     web::Path((string, int)): web::Path<(String, i32)>,
 ) -> Result<impl Responder, AppError> {
+    Ok(HttpResponse::Ok().body(format!("Test: string={} and int={}.", string, int)))
+}
+
+#[get("/request/{string}/{int}")]
+async fn request(req: HttpRequest) -> Result<impl Responder, AppError> {
+    let (string, int): (String, u8) = match req.match_info().load() {
+        Ok((s, i)) => (s, i),
+        Err(e) => {
+            return Err(AppError::BadRequest {
+                message: e.to_string(),
+            })
+        }
+    };
     Ok(HttpResponse::Ok().body(format!("Test: string={} and int={}.", string, int)))
 }
 
