@@ -26,8 +26,8 @@ where
     type Request = ServiceRequest;
     type Response = ServiceResponse<B>;
     type Error = Error;
-    type InitError = ();
     type Transform = TimerMiddleware<S>;
+    type InitError = ();
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
@@ -63,16 +63,13 @@ where
 
             let elapsed = now.elapsed();
 
-            match header::HeaderName::from_lowercase(b"x-process-time") {
-                Ok(name) => match header::HeaderValue::from_str(&format!("{:?}", elapsed)) {
-                    Ok(value) => {
-                        res.headers_mut().insert(name, value);
-                        Ok(res)
-                    }
-                    _ => Ok(res),
-                },
-                _ => Ok(res),
+            if let Ok(name) = header::HeaderName::from_lowercase(b"x-process-time") {
+                if let Ok(value) = header::HeaderValue::from_str(&format!("{:?}", elapsed)) {
+                    res.headers_mut().insert(name, value);
+                }
             }
+
+            Ok(res)
         })
     }
 }

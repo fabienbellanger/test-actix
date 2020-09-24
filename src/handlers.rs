@@ -87,3 +87,24 @@ async fn big_json_stream(number: web::Path<u32>) -> HttpResponse {
         .content_type("application/json")
         .streaming(stream)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_web::{test, App};
+    use bytes::Bytes;
+
+    #[actix_rt::test]
+    async fn test_hello_ok() {
+        let mut app = test::init_service(
+            App::new()
+                .route("/hello/{name}/{age}", web::get().to(index))
+        ).await;
+        let req = test::TestRequest::get().uri("/hello/fab/23").to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert!(resp.status().is_success());
+
+        let result = test::read_body(resp).await;
+        assert_eq!(result, Bytes::from_static(b"Hello world!"));
+    }
+}
