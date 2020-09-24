@@ -2,6 +2,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 use std::time::Instant;
 
+use actix_http::http::header;
 use actix_service::{Service, Transform};
 use actix_web::{dev::ServiceRequest, dev::ServiceResponse, Error};
 use futures::future::{ok, Ready};
@@ -55,19 +56,23 @@ where
 
     fn call(&mut self, req: ServiceRequest) -> Self::Future {
         let now = Instant::now();
-
         let fut = self.service.call(req);
 
         Box::pin(async move {
-            let res = fut.await?;
+            let mut res = fut.await?;
 
             let elapsed = now.elapsed();
-            let mut duration = elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 * 1e-9;
-            println!("Process time: {:.3}s", duration);
-            duration = elapsed.as_millis() as f64 + elapsed.subsec_nanos() as f64 * 1e-3;
-            println!("Process time: {:.6}ms - {:?}", duration, elapsed,);
 
-            Ok(res)
+            match header::HeaderName::from_lowercase(b"x-process-time") {
+                Ok(name) => match header::HeaderValue::from_str(&format!("{:?}", elapsed)) {
+                    Ok(value) => {
+                        res.headers_mut().insert(name, value);
+                        Ok(res)
+                    }
+                    _ => Ok(res),
+                },
+                _ => Ok(res),
+            }
         })
     }
 }

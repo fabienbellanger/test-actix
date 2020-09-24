@@ -65,7 +65,7 @@ async fn json(info: web::Json<models::Info>) -> impl Responder {
 #[get("/big-json")]
 async fn big_json() -> Result<web::Json<Vec<models::Task>>, AppError> {
     let mut v: Vec<models::Task> = Vec::new();
-    for i in 0..200_000 {
+    for i in 0..100_000 {
         v.push(models::Task {
             id: i,
             name: "Coucou ceci est mon nom",
