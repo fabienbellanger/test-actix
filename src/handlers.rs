@@ -21,7 +21,7 @@ pub async fn not_found() -> Result<&'static str, AppError> {
 }
 
 #[get("/hello/{name}/{age}")]
-async fn hello(info: web::Path<models::Info>) -> Result<impl Responder, AppError> {
+pub async fn hello(info: web::Path<models::Info>) -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().body(format!(
         "My name is {} and i am {} years old.",
         info.name, info.age
@@ -29,14 +29,14 @@ async fn hello(info: web::Path<models::Info>) -> Result<impl Responder, AppError
 }
 
 #[get("/test/{string}/{int}")]
-async fn test(
+pub async fn test(
     web::Path((string, int)): web::Path<(String, i32)>,
 ) -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().body(format!("Test: string={} and int={}.", string, int)))
 }
 
 #[get("/request/{string}/{int}")]
-async fn request(req: HttpRequest) -> Result<impl Responder, AppError> {
+pub async fn request(req: HttpRequest) -> Result<impl Responder, AppError> {
     let (string, int): (String, u8) = match req.match_info().load() {
         Ok((s, i)) => (s, i),
         Err(e) => {
@@ -49,7 +49,7 @@ async fn request(req: HttpRequest) -> Result<impl Responder, AppError> {
 }
 
 #[get("/query")]
-async fn query(info: web::Query<models::Query>) -> Result<impl Responder, AppError> {
+pub async fn query(info: web::Query<models::Query>) -> Result<impl Responder, AppError> {
     let username = match &info.username {
         Some(v) => &v,
         None => "",
@@ -58,12 +58,12 @@ async fn query(info: web::Query<models::Query>) -> Result<impl Responder, AppErr
 }
 
 #[get("/json")]
-async fn json(info: web::Json<models::Info>) -> impl Responder {
+pub async fn json(info: web::Json<models::Info>) -> impl Responder {
     format!("Welcome {} - {}!", info.name, info.age)
 }
 
 #[get("/big-json")]
-async fn big_json() -> Result<web::Json<Vec<models::Task>>, AppError> {
+pub async fn big_json() -> Result<web::Json<Vec<models::Task>>, AppError> {
     let mut v: Vec<models::Task> = Vec::new();
     for i in 0..100_000 {
         v.push(models::Task {
@@ -76,7 +76,7 @@ async fn big_json() -> Result<web::Json<Vec<models::Task>>, AppError> {
 }
 
 #[get("/big-json-stream/{number}")]
-async fn big_json_stream(number: web::Path<u32>) -> HttpResponse {
+pub async fn big_json_stream(number: web::Path<u32>) -> HttpResponse {
     let stream = models::TaskStream {
         number: *number,
         next: 0,
@@ -98,13 +98,30 @@ mod tests {
     async fn test_hello_ok() {
         let mut app = test::init_service(
             App::new()
-                .route("/hello/{name}/{age}", web::get().to(index))
+                .route("/", web::get().to(index))
         ).await;
+
         let req = test::TestRequest::get().uri("/hello/fab/23").to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
 
         let result = test::read_body(resp).await;
         assert_eq!(result, Bytes::from_static(b"Hello world!"));
+    }
+
+    #[actix_rt::test]
+    async fn test_request_ok() {
+        // TODO: Not work!
+        let mut app = test::init_service(
+            App::new()
+                .route("/request/{string}/{int}", web::get().to(request))
+        ).await;
+
+        let req = test::TestRequest::get().uri("/request/toto/12").to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert!(resp.status().is_success());
+
+        let result = test::read_body(resp).await;
+        assert_eq!(result, Bytes::from_static(b"Test: string=toto and int=12."));
     }
 }
