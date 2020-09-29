@@ -111,10 +111,9 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_request_ok() {
-        // TODO: Not work!
         let mut app = test::init_service(
             App::new()
-                .route("/request/{string}/{int}", web::get().to(request))
+                .service(request)
         ).await;
 
         let req = test::TestRequest::get().uri("/request/toto/12").to_request();
