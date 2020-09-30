@@ -20,7 +20,7 @@ async fn main() -> std::io::Result<()> {
 
     // Logger
     // ------
-    env_logger::from_env(Env::default().default_filter_or(&settings.server_log_level)).init();
+    env_logger::from_env(Env::default().default_filter_or(settings.server_log_level)).init();
 
     // Start server
     // ------------

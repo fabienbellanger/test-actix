@@ -5,7 +5,7 @@ pub fn api(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/v1")
             .service(handlers::big_json)
-            .service(handlers::big_json_stream),
+            .service(handlers::big_json_stream)
     );
 }
 
@@ -17,5 +17,6 @@ pub fn web(cfg: &mut web::ServiceConfig) {
         .service(handlers::test)
         .service(handlers::request)
         .service(handlers::json)
-        .service(handlers::query);
+        .service(handlers::query)
+        .service(handlers::static_file);
 }

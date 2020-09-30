@@ -1,9 +1,18 @@
 use crate::errors::AppError;
 use crate::models;
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use actix_files::NamedFile;
+use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
+use std::path::PathBuf;
 
 pub async fn index() -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().body("Hello world!"))
+}
+
+#[get("/{filename:.*}")]
+pub async fn static_file(req: HttpRequest) -> Result<NamedFile> {
+    // http://127.0.0.1/static/index.html
+    let path: PathBuf = req.match_info().query("filename").parse().unwrap();
+    Ok(NamedFile::open(path)?)
 }
 
 #[get("/internal-error")]
@@ -96,10 +105,7 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_hello_ok() {
-        let mut app = test::init_service(
-            App::new()
-                .route("/", web::get().to(index))
-        ).await;
+        let mut app = test::init_service(App::new().route("/", web::get().to(index))).await;
 
         let req = test::TestRequest::get().uri("/hello/fab/23").to_request();
         let resp = test::call_service(&mut app, req).await;
@@ -111,12 +117,11 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_request_ok() {
-        let mut app = test::init_service(
-            App::new()
-                .service(request)
-        ).await;
+        let mut app = test::init_service(App::new().service(request)).await;
 
-        let req = test::TestRequest::get().uri("/request/toto/12").to_request();
+        let req = test::TestRequest::get()
+            .uri("/request/toto/12")
+            .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
 
