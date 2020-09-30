@@ -8,6 +8,7 @@ pub struct Config {
     pub server_url: String,
     pub server_port: String,
     pub server_log_level: String,
+    pub database_url: String,
 }
 
 impl Config {
