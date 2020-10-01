@@ -4,4 +4,4 @@ CREATE TABLE users (
     lastname VARCHAR(100) NOT NULL,
     firstname VARCHAR(100) NOT NULL,
     PRIMARY KEY (id)
-)
+);

@@ -1,5 +1,5 @@
 use crate::errors::AppError;
-use crate::models;
+use crate::{models, MySqlPooledConnection, MysqlPool};
 use actix_files::NamedFile;
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
 use std::path::PathBuf;
@@ -10,7 +10,7 @@ pub async fn index() -> Result<impl Responder, AppError> {
 
 #[get("/{filename:.*}")]
 pub async fn static_file(req: HttpRequest) -> Result<NamedFile> {
-    // http://127.0.0.1/static/index.html
+    // http://127.0.0.1:8089/static/index.html
     let path: PathBuf = req.match_info().query("filename").parse().unwrap();
     Ok(NamedFile::open(path)?)
 }
@@ -128,4 +128,16 @@ mod tests {
         let result = test::read_body(resp).await;
         assert_eq!(result, Bytes::from_static(b"Test: string=toto and int=12."));
     }
+}
+
+fn mysql_pool_handler(pool: web::Data<MysqlPool>) -> Result<MySqlPooledConnection, HttpResponse> {
+    pool.get()
+        .map_err(|e| HttpResponse::InternalServerError().json(e.to_string()))
+}
+
+#[get("/users")]
+pub async fn users(_req: HttpRequest, pool: web::Data<MysqlPool>) -> Result<HttpResponse> {
+    let mysql_pool = mysql_pool_handler(pool)?;
+    println!("ici");
+    Ok(HttpResponse::Ok().json(crate::db::models::UserList::list(&mysql_pool)))
 }

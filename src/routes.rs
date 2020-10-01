@@ -6,6 +6,7 @@ pub fn api(cfg: &mut web::ServiceConfig) {
         web::scope("/v1")
             .service(handlers::big_json)
             .service(handlers::big_json_stream)
+            .service(handlers::users),
     );
 }
 

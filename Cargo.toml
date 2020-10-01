@@ -25,4 +25,4 @@ bytes = "0.5.6"
 [dependencies.diesel]
 version = "1.4.4"
 default-features = false
-features = ["r2d2", "mysql", "chrono"]
+features = ["r2d2", "mysql"]
