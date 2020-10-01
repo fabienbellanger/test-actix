@@ -1,5 +1,7 @@
+pub mod users;
+
 use crate::errors::AppError;
-use crate::{models, MySqlPooledConnection, MysqlPool};
+use crate::models;
 use actix_files::NamedFile;
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
 use std::path::PathBuf;
@@ -128,16 +130,4 @@ mod tests {
         let result = test::read_body(resp).await;
         assert_eq!(result, Bytes::from_static(b"Test: string=toto and int=12."));
     }
-}
-
-fn mysql_pool_handler(pool: web::Data<MysqlPool>) -> Result<MySqlPooledConnection, HttpResponse> {
-    pool.get()
-        .map_err(|e| HttpResponse::InternalServerError().json(e.to_string()))
-}
-
-#[get("/users")]
-pub async fn users(_req: HttpRequest, pool: web::Data<MysqlPool>) -> Result<HttpResponse> {
-    let mysql_pool = mysql_pool_handler(pool)?;
-    println!("ici");
-    Ok(HttpResponse::Ok().json(crate::db::models::UserList::list(&mysql_pool)))
 }
