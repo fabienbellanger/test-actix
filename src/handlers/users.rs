@@ -1,7 +1,9 @@
 use crate::db;
 use crate::db::models::{NewUser, User};
 use crate::MysqlPool;
-use actix_web::{get, post, web, Error, HttpRequest, HttpResponse, Result};
+use actix_web::{delete, get, post, web, Error, HttpRequest, HttpResponse, Result};
+
+// TODO: Gérer avec des AppError
 
 #[get("/users")]
 pub async fn get_users(_req: HttpRequest, pool: web::Data<MysqlPool>) -> Result<HttpResponse> {
@@ -33,14 +35,32 @@ pub async fn create_user(
 ) -> Result<HttpResponse, Error> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
-    let user = web::block(move || {
-        User::create(&mysql_pool, form.lastname.clone(), form.firstname.clone())
-    })
-    .await
-    .map_err(|e| {
-        eprintln!("{}", e);
-        HttpResponse::InternalServerError().finish()
-    })?;
+    let user = web::block(move || User::create(&mysql_pool, form.into_inner()))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
 
     Ok(HttpResponse::Ok().json(user))
+}
+
+#[delete("/users/{id}")]
+pub async fn delete_user_by_id(
+    web::Path(id): web::Path<String>,
+    pool: web::Data<MysqlPool>,
+) -> Result<HttpResponse> {
+    let mysql_pool = db::mysql_pool_handler(pool)?;
+
+    let num_deleted = web::block(move || User::delete(&mysql_pool, id))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+
+    match num_deleted {
+        0 => Ok(HttpResponse::NotFound().finish()),
+        _ => Ok(HttpResponse::Ok().finish()),
+    }
 }

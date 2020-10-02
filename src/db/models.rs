@@ -22,20 +22,19 @@ pub struct UserList(pub Vec<User>);
 impl User {
     pub fn create(
         connection: &MysqlConnection,
-        lastname: String,
-        firstname: String,
+        new_user: NewUser,
     ) -> Result<Self, diesel::result::Error> {
-        let new_user = User {
+        let user = User {
             id: Uuid::new_v4().to_string(),
-            lastname: lastname,
-            firstname: firstname,
+            lastname: new_user.lastname,
+            firstname: new_user.firstname,
         };
 
         diesel::insert_into(users::table)
-            .values(&new_user)
+            .values(&user)
             .execute(connection)?;
 
-        Ok(new_user)
+        Ok(user)
     }
 
     pub fn get_by_id(
@@ -44,6 +43,16 @@ impl User {
     ) -> Result<Self, diesel::result::Error> {
         use crate::db::schema::users::dsl::*;
         users.find(user_id).get_result::<User>(connection)
+    }
+
+    pub fn delete(
+        connection: &MysqlConnection,
+        user_id: String,
+    ) -> Result<usize, diesel::result::Error> {
+        use crate::db::schema::users::dsl::*;
+
+        let num_deleted = diesel::delete(users.filter(id.eq(user_id))).execute(connection)?;
+        Ok(num_deleted)
     }
 }
 

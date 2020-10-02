@@ -8,6 +8,7 @@ pub fn api(cfg: &mut web::ServiceConfig) {
             .service(handlers::big_json_stream)
             .service(handlers::users::get_users)
             .service(handlers::users::get_user_by_id)
+            .service(handlers::users::delete_user_by_id)
             .service(handlers::users::create_user),
     );
 }
