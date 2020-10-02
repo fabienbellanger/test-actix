@@ -6,14 +6,14 @@ use uuid::Uuid;
 #[derive(Queryable, Serialize, Deserialize, Insertable, Debug)]
 pub struct User {
     pub id: String,
-    pub firstname: String,
     pub lastname: String,
+    pub firstname: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NewUser {
-    pub firstname: String,
     pub lastname: String,
+    pub firstname: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -36,6 +36,14 @@ impl User {
             .execute(connection)?;
 
         Ok(new_user)
+    }
+
+    pub fn get_by_id(
+        connection: &MysqlConnection,
+        user_id: String,
+    ) -> Result<Self, diesel::result::Error> {
+        use crate::db::schema::users::dsl::*;
+        users.find(user_id).get_result::<User>(connection)
     }
 }
 
