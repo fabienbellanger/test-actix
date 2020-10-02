@@ -47,7 +47,10 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .data(init(&db_url).unwrap())
-            .wrap(ErrorHandlers::new().handler(http::StatusCode::NOT_FOUND, errors::render_404))
+            .wrap(
+                ErrorHandlers::new()
+                    .handler(http::StatusCode::NOT_FOUND, handlers::errors::render_404),
+            )
             .wrap(Logger::new("%s | %r | %Ts | %{User-Agent}i | %a"))
             .wrap(middlewares::timer::Timer)
             .wrap(

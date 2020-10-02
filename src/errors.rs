@@ -1,16 +1,13 @@
 use actix_http::ResponseBuilder;
-use actix_web::middleware::errhandlers::ErrorHandlerResponse;
-use actix_web::{body::Body, body::ResponseBody, dev, http};
 use actix_web::{error, http::header, http::StatusCode, HttpResponse};
 use failure::Fail;
 use serde::Serialize;
-use serde_json::json;
 
 #[derive(Serialize)]
-struct AppErrorMessage {
-    code: u16,
-    error: String,
-    message: String,
+pub struct AppErrorMessage {
+    pub code: u16,
+    pub error: String,
+    pub message: String,
 }
 
 #[derive(Fail, Debug)]
@@ -55,24 +52,4 @@ impl error::ResponseError for AppError {
             AppError::Timeout => StatusCode::GATEWAY_TIMEOUT,
         }
     }
-}
-
-// TODO: A factoriser !
-pub fn render_404<B>(
-    mut res: dev::ServiceResponse<B>,
-) -> Result<ErrorHandlerResponse<B>, error::Error> {
-    let err = json!(AppErrorMessage {
-        code: StatusCode::NOT_FOUND.as_u16(),
-        error: String::from("Not Found"),
-        message: "Resource Not Found".to_owned(),
-    });
-
-    res.request();
-    res.headers_mut().insert(
-        http::header::CONTENT_TYPE,
-        http::HeaderValue::from_static("application/json"),
-    );
-    res = res.map_body(|_, _| ResponseBody::Body(Body::from(err)).into_body());
-
-    Ok(ErrorHandlerResponse::Response(res))
 }
