@@ -15,21 +15,7 @@ use actix_cors::Cors;
 use actix_web::middleware::errhandlers::ErrorHandlers;
 use actix_web::middleware::Logger;
 use actix_web::{guard, http, web, App, HttpServer};
-use diesel::mysql::MysqlConnection;
-use diesel::r2d2::{ConnectionManager, Pool, PoolError, PooledConnection};
 use env_logger::Env;
-
-pub type MysqlPool = Pool<ConnectionManager<MysqlConnection>>;
-pub type MySqlPooledConnection = PooledConnection<ConnectionManager<MysqlConnection>>;
-
-fn init(database_url: &str) -> Result<MysqlPool, PoolError> {
-    let manager = ConnectionManager::<MysqlConnection>::new(database_url);
-    Pool::builder().build(manager)
-}
-
-// pub fn connect() -> MysqlPool {
-//     init(dotenv!("DATABASE_URL")).expect("Error")
-// }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -46,7 +32,7 @@ async fn main() -> std::io::Result<()> {
     // ------------
     HttpServer::new(move || {
         App::new()
-            .data(init(&db_url).unwrap())
+            .data(db::init(&db_url).unwrap())
             .wrap(
                 ErrorHandlers::new()
                     .handler(http::StatusCode::NOT_FOUND, handlers::errors::render_404),

@@ -1,6 +1,6 @@
 use crate::db;
 use crate::db::models::{NewUser, User};
-use crate::MysqlPool;
+use crate::db::MysqlPool;
 use actix_web::{delete, get, post, web, Error, HttpRequest, HttpResponse, Result};
 
 // TODO: Gérer avec des AppError
