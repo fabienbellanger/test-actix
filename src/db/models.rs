@@ -54,6 +54,22 @@ impl User {
         let num_deleted = diesel::delete(users.filter(id.eq(user_id))).execute(connection)?;
         Ok(num_deleted)
     }
+
+    pub fn update(
+        connection: &MysqlConnection,
+        user_id: String,
+        new_user: NewUser,
+    ) -> Result<usize, diesel::result::Error> {
+        use crate::db::schema::users::dsl::*;
+
+        let updated = diesel::update(users.find(user_id))
+            .set((
+                lastname.eq(new_user.lastname),
+                firstname.eq(new_user.firstname),
+            ))
+            .execute(connection)?;
+        Ok(updated)
+    }
 }
 
 impl UserList {

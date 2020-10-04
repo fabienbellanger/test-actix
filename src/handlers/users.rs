@@ -1,7 +1,7 @@
 use crate::db;
 use crate::db::models::{NewUser, User};
 use crate::db::MysqlPool;
-use actix_web::{delete, get, post, web, Error, HttpRequest, HttpResponse, Result};
+use actix_web::{delete, get, post, put, web, Error, HttpRequest, HttpResponse, Result};
 
 // TODO: Gérer avec des AppError
 
@@ -60,6 +60,27 @@ pub async fn delete_user_by_id(
         })?;
 
     match num_deleted {
+        0 => Ok(HttpResponse::NotFound().finish()),
+        _ => Ok(HttpResponse::Ok().finish()),
+    }
+}
+
+#[put("/users/{id}")]
+pub async fn update(
+    web::Path(id): web::Path<String>,
+    form: web::Json<NewUser>,
+    pool: web::Data<MysqlPool>,
+) -> Result<HttpResponse> {
+    let mysql_pool = db::mysql_pool_handler(pool)?;
+
+    let num_updated = web::block(move || User::update(&mysql_pool, id, form.into_inner()))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+
+    match num_updated {
         0 => Ok(HttpResponse::NotFound().finish()),
         _ => Ok(HttpResponse::Ok().finish()),
     }
