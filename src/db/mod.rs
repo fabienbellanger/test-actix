@@ -26,8 +26,11 @@ pub fn init(database_url: &str) -> Result<MysqlPool, PoolError> {
         .expect("Failed to create pool.");
 
     // Run embedded database migrations
-    embedded_migrations::run(&pool.get().expect("Failed to migrate."))
-        .expect("Failed to run database migrations.");
+    embedded_migrations::run_with_output(
+        &pool.get().expect("Failed to migrate."),
+        &mut std::io::stdout(),
+    )
+    .expect("Failed to run database migrations.");
 
     Ok(pool)
 }
