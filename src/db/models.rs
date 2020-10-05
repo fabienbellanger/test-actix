@@ -59,16 +59,17 @@ impl User {
         connection: &MysqlConnection,
         user_id: String,
         new_user: NewUser,
-    ) -> Result<usize, diesel::result::Error> {
+    ) -> Result<Self, diesel::result::Error> {
         use crate::db::schema::users::dsl::*;
 
-        let updated = diesel::update(users.find(user_id))
+        diesel::update(users.find(&user_id))
             .set((
-                lastname.eq(new_user.lastname),
-                firstname.eq(new_user.firstname),
+                lastname.eq(&new_user.lastname),
+                firstname.eq(&new_user.firstname),
             ))
             .execute(connection)?;
-        Ok(updated)
+
+        users.find(user_id).get_result::<User>(connection)
     }
 }
 

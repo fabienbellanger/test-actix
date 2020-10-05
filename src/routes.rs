@@ -1,21 +1,22 @@
 use crate::handlers;
+use crate::handlers::users;
 use actix_web::web;
 
 pub fn api(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/v1")
-            .service(handlers::big_json)
-            .service(handlers::big_json_stream)
-            .service(handlers::users::get_users)
-            .service(handlers::users::get_user_by_id)
-            .service(handlers::users::delete_user_by_id)
-            .service(handlers::users::update)
-            .service(handlers::users::create_user),
+            .route("/users", web::get().to(users::get_users))
+            .route("/users/{id}", web::get().to(users::get_by_id))
+            .route("/users/{id}", web::delete().to(users::delete))
+            .route("/users/{id}", web::put().to(users::update))
+            .route("/users/{id}", web::post().to(users::create)),
     );
 }
 
 pub fn web(cfg: &mut web::ServiceConfig) {
     cfg.route("/", web::get().to(handlers::index))
+        .service(handlers::big_json)
+        .service(handlers::big_json_stream)
         .service(handlers::internal_error)
         .service(handlers::not_found)
         .service(handlers::hello)

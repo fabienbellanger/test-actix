@@ -1,21 +1,23 @@
 use crate::db;
 use crate::db::models::{NewUser, User};
 use crate::db::MysqlPool;
-use actix_web::{delete, get, post, put, web, Error, HttpRequest, HttpResponse, Result};
+use actix_web::{web, Error, HttpRequest, HttpResponse, Result};
 
 // TODO: Gérer avec des AppError
 
-#[get("/users")]
-pub async fn get_users(_req: HttpRequest, pool: web::Data<MysqlPool>) -> Result<HttpResponse> {
+// Route: "/users"
+// curl http://localhost:8089/v1/users
+pub async fn get_users(pool: web::Data<MysqlPool>, _req: HttpRequest) -> Result<HttpResponse> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
     Ok(HttpResponse::Ok().json(crate::db::models::UserList::list(&mysql_pool)))
 }
 
-#[get("/users/{id}")]
-pub async fn get_user_by_id(
-    web::Path(id): web::Path<String>,
+// Route: "/users/{id}
+// curl http://localhost:8089/v1/users/<uuid>
+pub async fn get_by_id(
     pool: web::Data<MysqlPool>,
+    web::Path(id): web::Path<String>,
 ) -> Result<HttpResponse> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
@@ -28,10 +30,11 @@ pub async fn get_user_by_id(
     Ok(HttpResponse::Ok().json(user))
 }
 
-#[post("/users")]
-pub async fn create_user(
-    form: web::Json<NewUser>,
+// Route: "/users"
+// curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/users -d '{"lastname":"Bellanger", "firstname":"Fabien"}'
+pub async fn create(
     pool: web::Data<MysqlPool>,
+    form: web::Json<NewUser>,
 ) -> Result<HttpResponse, Error> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
@@ -45,8 +48,9 @@ pub async fn create_user(
     Ok(HttpResponse::Ok().json(user))
 }
 
-#[delete("/users/{id}")]
-pub async fn delete_user_by_id(
+// Route: "/users/{id}"
+// curl -X DELETE http://127.0.0.1:8089/v1/users/<uuid>
+pub async fn delete(
     web::Path(id): web::Path<String>,
     pool: web::Data<MysqlPool>,
 ) -> Result<HttpResponse> {
@@ -65,23 +69,21 @@ pub async fn delete_user_by_id(
     }
 }
 
-#[put("/users/{id}")]
+// Route: "/users/{id}"
+// curl -H "Content-Type: application/json" -X PUT http://127.0.0.1:8089/v1/users/<uuid> -d '{"lastname":"Bellanger", "firstname":"Fabien"}'
 pub async fn update(
+    pool: web::Data<MysqlPool>,
     web::Path(id): web::Path<String>,
     form: web::Json<NewUser>,
-    pool: web::Data<MysqlPool>,
 ) -> Result<HttpResponse> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
-    let num_updated = web::block(move || User::update(&mysql_pool, id, form.into_inner()))
+    let user = web::block(move || User::update(&mysql_pool, id, form.into_inner()))
         .await
-        .map_err(|e| {
-            eprintln!("{}", e);
-            HttpResponse::InternalServerError().finish()
+        .map_err(|e| match e.to_string().as_str() {
+            "NotFound" => HttpResponse::NotFound().finish(),
+            _ => HttpResponse::InternalServerError().finish(),
         })?;
 
-    match num_updated {
-        0 => Ok(HttpResponse::NotFound().finish()),
-        _ => Ok(HttpResponse::Ok().finish()),
-    }
+    Ok(HttpResponse::Ok().json(user))
 }
