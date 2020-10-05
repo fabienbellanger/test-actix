@@ -8,12 +8,16 @@ pub struct User {
     pub id: String,
     pub lastname: String,
     pub firstname: String,
+    pub email: String,
+    pub password: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NewUser {
     pub lastname: String,
     pub firstname: String,
+    pub email: String,
+    pub password: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -28,6 +32,8 @@ impl User {
             id: Uuid::new_v4().to_string(),
             lastname: new_user.lastname,
             firstname: new_user.firstname,
+            email: new_user.email,
+            password: new_user.password, // TODO: To hash
         };
 
         diesel::insert_into(users::table)

@@ -31,15 +31,15 @@ async fn main() -> std::io::Result<()> {
     env_logger::from_env(Env::default().default_filter_or(settings.server_log_level)).init();
 
     // Test JWT
-    println!(
-        "{}",
-        crate::models::auth::JWT::generate(
-            "user_id".to_owned(),
-            "user_lastname".to_owned(),
-            "user_firstname".to_owned()
-        )
-        .unwrap()
-    );
+    let token = crate::models::auth::JWT::generate(
+        "user_id".to_owned(),
+        "user_lastname".to_owned(),
+        "user_firstname".to_owned(),
+        "user_email".to_owned(),
+    )
+    .unwrap();
+    dbg!(&token);
+    dbg!(crate::models::auth::JWT::parse(token).unwrap());
 
     // Start server
     // ------------
@@ -64,6 +64,7 @@ async fn main() -> std::io::Result<()> {
                     .max_age(3600)
                     .finish(),
             )
+            .wrap(middlewares::auth::Authentication)
             .service(
                 web::resource("/path").route(
                     web::route()
