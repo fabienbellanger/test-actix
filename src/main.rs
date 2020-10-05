@@ -1,3 +1,4 @@
+mod auth;
 mod config;
 mod db;
 mod errors;
@@ -8,6 +9,8 @@ mod routes;
 
 #[macro_use]
 extern crate diesel;
+#[macro_use]
+extern crate diesel_migrations;
 extern crate serde;
 
 use crate::config::Config;
