@@ -1,5 +1,5 @@
 use crate::db;
-use crate::db::models::{User, UserJson};
+use crate::db::models::user::{NewUser, User};
 use crate::db::MysqlPool;
 use actix_web::{web, Error, HttpRequest, HttpResponse, Result};
 
@@ -10,7 +10,7 @@ use actix_web::{web, Error, HttpRequest, HttpResponse, Result};
 pub async fn get_users(pool: web::Data<MysqlPool>, _req: HttpRequest) -> Result<HttpResponse> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
-    Ok(HttpResponse::Ok().json(crate::db::models::UserList::list(&mysql_pool)))
+    Ok(HttpResponse::Ok().json(crate::db::models::user::UserList::list(&mysql_pool)))
 }
 
 // Route: "/users/{id}
@@ -34,7 +34,7 @@ pub async fn get_by_id(
 // curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/users -d '{"lastname":"Bellanger", "firstname":"Fabien"}'
 pub async fn create(
     pool: web::Data<MysqlPool>,
-    form: web::Json<UserJson>,
+    form: web::Json<NewUser>,
 ) -> Result<HttpResponse, Error> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
@@ -74,7 +74,7 @@ pub async fn delete(
 pub async fn update(
     pool: web::Data<MysqlPool>,
     web::Path(id): web::Path<String>,
-    form: web::Json<UserJson>,
+    form: web::Json<NewUser>,
 ) -> Result<HttpResponse> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
