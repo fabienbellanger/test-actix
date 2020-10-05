@@ -11,7 +11,7 @@ pub struct User {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct NewUser {
+pub struct UserJson {
     pub lastname: String,
     pub firstname: String,
 }
@@ -22,7 +22,7 @@ pub struct UserList(pub Vec<User>);
 impl User {
     pub fn create(
         connection: &MysqlConnection,
-        new_user: NewUser,
+        new_user: UserJson,
     ) -> Result<Self, diesel::result::Error> {
         let user = User {
             id: Uuid::new_v4().to_string(),
@@ -58,7 +58,7 @@ impl User {
     pub fn update(
         connection: &MysqlConnection,
         user_id: String,
-        new_user: NewUser,
+        new_user: UserJson,
     ) -> Result<Self, diesel::result::Error> {
         use crate::db::schema::users::dsl::*;
 

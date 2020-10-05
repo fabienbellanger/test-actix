@@ -7,9 +7,9 @@ pub fn api(cfg: &mut web::ServiceConfig) {
         web::scope("/v1")
             .route("/users", web::get().to(users::get_users))
             .route("/users/{id}", web::get().to(users::get_by_id))
-            .route("/users/{id}", web::delete().to(users::delete))
+            .route("/users/{id}", web::post().to(users::create))
             .route("/users/{id}", web::put().to(users::update))
-            .route("/users/{id}", web::post().to(users::create)),
+            .route("/users/{id}", web::delete().to(users::delete)),
     );
 }
 
