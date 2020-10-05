@@ -1,6 +1,6 @@
 use crate::db;
-use crate::db::models::user::{NewUser, User};
 use crate::db::MysqlPool;
+use crate::models::user::{NewUser, User};
 use actix_web::{web, Error, HttpRequest, HttpResponse, Result};
 
 // TODO: Gérer avec des AppError
@@ -10,7 +10,7 @@ use actix_web::{web, Error, HttpRequest, HttpResponse, Result};
 pub async fn get_users(pool: web::Data<MysqlPool>, _req: HttpRequest) -> Result<HttpResponse> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
-    Ok(HttpResponse::Ok().json(crate::db::models::user::UserList::list(&mysql_pool)))
+    Ok(HttpResponse::Ok().json(crate::models::user::UserList::list(&mysql_pool)))
 }
 
 // Route: "/users/{id}

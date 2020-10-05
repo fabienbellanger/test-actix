@@ -1,4 +1,3 @@
-mod auth;
 mod config;
 mod db;
 mod errors;
@@ -30,6 +29,17 @@ async fn main() -> std::io::Result<()> {
     // Logger
     // ------
     env_logger::from_env(Env::default().default_filter_or(settings.server_log_level)).init();
+
+    // Test JWT
+    println!(
+        "{}",
+        crate::models::auth::JWT::generate(
+            "user_id".to_owned(),
+            "user_lastname".to_owned(),
+            "user_firstname".to_owned()
+        )
+        .unwrap()
+    );
 
     // Start server
     // ------------

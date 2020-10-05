@@ -1,4 +1,3 @@
-pub mod models;
 pub mod schema;
 
 use actix_web::{web, HttpResponse, Result};

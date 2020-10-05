@@ -1,3 +1,6 @@
+pub mod auth;
+pub mod user;
+
 use actix_web::{web::Bytes, Error};
 use serde::{Deserialize, Serialize};
 use std::pin::Pin;
