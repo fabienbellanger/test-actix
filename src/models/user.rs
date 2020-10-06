@@ -80,14 +80,11 @@ impl User {
 }
 
 impl UserList {
-    pub fn list(connection: &MysqlConnection) -> Self {
+    pub fn list(connection: &MysqlConnection) -> Result<Self, diesel::result::Error> {
         use crate::db::schema::users::dsl::*;
 
-        let result = users
-            .limit(10)
-            .load::<User>(connection)
-            .expect("Error loading users");
+        let result = users.limit(10).load::<User>(connection)?;
 
-        UserList(result)
+        Ok(UserList(result))
     }
 }

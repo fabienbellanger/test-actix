@@ -1,16 +1,29 @@
 use crate::db;
 use crate::db::MysqlPool;
-use crate::models::user::{NewUser, User};
-use actix_web::{web, Error, HttpRequest, HttpResponse, Result};
+use crate::errors::AppError;
+use crate::models::user::{NewUser, User, UserList};
+use actix_web::{web, HttpRequest, HttpResponse, Result};
 
 // TODO: Gérer avec des AppError
 
 // Route: "/users"
 // curl http://localhost:8089/v1/users
-pub async fn get_users(pool: web::Data<MysqlPool>, _req: HttpRequest) -> Result<HttpResponse> {
+pub async fn get_users(
+    pool: web::Data<MysqlPool>,
+    _req: HttpRequest,
+) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
-    Ok(HttpResponse::Ok().json(crate::models::user::UserList::list(&mysql_pool)))
+    // TODO: Faire une méthode sur User
+    let users = web::block(move || UserList::list(&mysql_pool))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            AppError::InternalError {
+                message: "Error while retrieving users list".to_owned(),
+            }
+        })?;
+    Ok(HttpResponse::Ok().json(users))
 }
 
 // Route: "/users/{id}
@@ -18,31 +31,36 @@ pub async fn get_users(pool: web::Data<MysqlPool>, _req: HttpRequest) -> Result<
 pub async fn get_by_id(
     pool: web::Data<MysqlPool>,
     web::Path(id): web::Path<String>,
-) -> Result<HttpResponse> {
+) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
     let user = web::block(move || User::get_by_id(&mysql_pool, id))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
-            HttpResponse::InternalServerError().finish()
+            AppError::InternalError {
+                message: "Error while retrieving a user's information".to_owned(),
+            }
         })?;
     Ok(HttpResponse::Ok().json(user))
 }
 
 // Route: "/users"
-// curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/users -d '{"lastname":"Bellanger", "firstname":"Fabien"}'
+// curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/users \
+// -d '{"lastname":"Bellanger", "firstname":"Fabien", "email":"fabien.bellanger@test.com", "password": "0000"}'
 pub async fn create(
     pool: web::Data<MysqlPool>,
     form: web::Json<NewUser>,
-) -> Result<HttpResponse, Error> {
+) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
     let user = web::block(move || User::create(&mysql_pool, form.into_inner()))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
-            HttpResponse::InternalServerError().finish()
+            AppError::InternalError {
+                message: "Error during user creation".to_owned(),
+            }
         })?;
 
     Ok(HttpResponse::Ok().json(user))
@@ -53,18 +71,22 @@ pub async fn create(
 pub async fn delete(
     web::Path(id): web::Path<String>,
     pool: web::Data<MysqlPool>,
-) -> Result<HttpResponse> {
+) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
     let num_deleted = web::block(move || User::delete(&mysql_pool, id))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
-            HttpResponse::InternalServerError().finish()
+            AppError::InternalError {
+                message: "Error during user deletion".to_owned(),
+            }
         })?;
 
     match num_deleted {
-        0 => Ok(HttpResponse::NotFound().finish()),
+        0 => Err(AppError::NotFound {
+            message: "User not found".to_owned(),
+        }),
         _ => Ok(HttpResponse::Ok().finish()),
     }
 }
@@ -75,14 +97,18 @@ pub async fn update(
     pool: web::Data<MysqlPool>,
     web::Path(id): web::Path<String>,
     form: web::Json<NewUser>,
-) -> Result<HttpResponse> {
+) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
     let user = web::block(move || User::update(&mysql_pool, id, form.into_inner()))
         .await
         .map_err(|e| match e.to_string().as_str() {
-            "NotFound" => HttpResponse::NotFound().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
+            "NotFound" => AppError::NotFound {
+                message: "User not found".to_owned(),
+            },
+            _ => AppError::InternalError {
+                message: "Error during user update".to_owned(),
+            },
         })?;
 
     Ok(HttpResponse::Ok().json(user))

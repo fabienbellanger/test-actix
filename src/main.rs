@@ -45,7 +45,7 @@ async fn main() -> std::io::Result<()> {
     // ------------
     HttpServer::new(move || {
         App::new()
-            .data(db::init(&db_url).unwrap())
+            .data(db::init(&db_url).expect("Failed to create pool."))
             .wrap(
                 ErrorHandlers::new()
                     .handler(http::StatusCode::NOT_FOUND, handlers::errors::render_404),
@@ -64,7 +64,7 @@ async fn main() -> std::io::Result<()> {
                     .max_age(3600)
                     .finish(),
             )
-            .wrap(middlewares::auth::Authentication)
+            //.wrap(middlewares::auth::Authentication)
             .service(
                 web::resource("/path").route(
                     web::route()
