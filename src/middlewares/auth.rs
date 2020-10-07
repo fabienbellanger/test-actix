@@ -1,16 +1,19 @@
-use std::pin::Pin;
-use std::task::{Context, Poll};
-
-use crate::models::auth;
+use crate::models::{auth, user::User};
+use crate::{db, db::MysqlPool};
 use actix_service::{Service, Transform};
 use actix_web::{
     dev::{ServiceRequest, ServiceResponse},
     http::Method,
     http::StatusCode,
+    web::Data,
     Error, HttpResponse,
 };
-use futures::future::{ok, Ready};
-use futures::Future;
+use futures::{
+    future::{ok, Ready},
+    Future,
+};
+use std::pin::Pin;
+use std::task::{Context, Poll};
 
 const AUTHORIZATION: &str = "Authorization";
 
@@ -63,9 +66,15 @@ where
                 if let Ok(auth_str) = auth_header.to_str() {
                     if auth_str.starts_with("bearer") || auth_str.starts_with("Bearer") {
                         let token = auth_str[6..auth_str.len()].trim();
-                        if let Ok(_token_data) = auth::JWT::parse(token.to_owned()) {
-                            // TODO: Vérification en BDD
-                            auth_success = true;
+                        if let Ok(token_data) = auth::JWT::parse(token.to_owned()) {
+                            if let Some(pool) = req.app_data::<Data<MysqlPool>>() {
+                                if let Ok(conn) = db::mysql_pool_handler(pool.clone()) {
+                                    let user = User::get_by_id(&conn, token_data.user_id);
+                                    if user.is_ok() {
+                                        auth_success = true;
+                                    }
+                                }
+                            }
                         } else {
                             eprintln!("Failed to parse token: {}", token);
                         }

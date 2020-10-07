@@ -63,7 +63,7 @@ pub async fn create(
 }
 
 // Route: "/users"
-// curl http://localhost:8089/v1/users
+// curl http://localhost:8089/v1/users -H 'Authorization: Bearer '
 pub async fn get_users(
     pool: web::Data<MysqlPool>,
     _req: HttpRequest,
