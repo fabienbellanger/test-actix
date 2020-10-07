@@ -1,10 +1,66 @@
 use crate::db;
 use crate::db::MysqlPool;
 use crate::errors::AppError;
-use crate::models::user::{NewUser, User, UserList};
+use crate::models::auth::JWT;
+use crate::models::user::{Login, LoginResponse, NewUser, User, UserList};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
 
-// TODO: Gérer avec des AppError
+// Route: "/login"
+// curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/login \
+// -d '{"email":"fabien.bellanger3@test.com", "password": "0000"}'
+pub async fn login(
+    pool: web::Data<MysqlPool>,
+    form: web::Json<Login>,
+) -> Result<HttpResponse, AppError> {
+    let mysql_pool = db::mysql_pool_handler(pool)?;
+
+    let user = web::block(move || User::login(&mysql_pool, form.into_inner()))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            AppError::Unauthorized {}
+        })?;
+
+    // Génération du token
+    // -------------------
+    let token = JWT::generate(
+        user.id.to_owned(),
+        user.lastname.to_owned(),
+        user.firstname.to_owned(),
+        user.email.to_owned(),
+    );
+
+    match token {
+        Ok(token) => Ok(HttpResponse::Ok().json(LoginResponse {
+            lastname: user.lastname.to_owned(),
+            firstname: user.firstname.to_owned(),
+            email: user.email.to_owned(),
+            token,
+        })),
+        _ => Err(AppError::Unauthorized {}),
+    }
+}
+
+// Route: "/register"
+// curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/register \
+// -d '{"lastname":"Bellanger", "firstname":"Fabien", "email":"fabien.bellanger3@test.com", "password": "0000"}'
+pub async fn create(
+    pool: web::Data<MysqlPool>,
+    form: web::Json<NewUser>,
+) -> Result<HttpResponse, AppError> {
+    let mysql_pool = db::mysql_pool_handler(pool)?;
+
+    let user = web::block(move || User::create(&mysql_pool, form.into_inner()))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            AppError::InternalError {
+                message: "Error during user creation".to_owned(),
+            }
+        })?;
+
+    Ok(HttpResponse::Ok().json(user))
+}
 
 // Route: "/users"
 // curl http://localhost:8089/v1/users
@@ -42,27 +98,6 @@ pub async fn get_by_id(
                 message: "Error while retrieving a user's information".to_owned(),
             }
         })?;
-    Ok(HttpResponse::Ok().json(user))
-}
-
-// Route: "/users"
-// curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/users \
-// -d '{"lastname":"Bellanger", "firstname":"Fabien", "email":"fabien.bellanger@test.com", "password": "0000"}'
-pub async fn create(
-    pool: web::Data<MysqlPool>,
-    form: web::Json<NewUser>,
-) -> Result<HttpResponse, AppError> {
-    let mysql_pool = db::mysql_pool_handler(pool)?;
-
-    let user = web::block(move || User::create(&mysql_pool, form.into_inner()))
-        .await
-        .map_err(|e| {
-            eprintln!("{}", e);
-            AppError::InternalError {
-                message: "Error during user creation".to_owned(),
-            }
-        })?;
-
     Ok(HttpResponse::Ok().json(user))
 }
 

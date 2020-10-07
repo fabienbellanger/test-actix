@@ -6,6 +6,7 @@ use actix_service::{Service, Transform};
 use actix_web::{
     dev::{ServiceRequest, ServiceResponse},
     http::Method,
+    http::StatusCode,
     Error, HttpResponse,
 };
 use futures::future::{ok, Ready};
@@ -62,11 +63,11 @@ where
                 if let Ok(auth_str) = auth_header.to_str() {
                     if auth_str.starts_with("bearer") || auth_str.starts_with("Bearer") {
                         let token = auth_str[6..auth_str.len()].trim();
-                        if let Ok(token_data) = auth::JWT::parse(token.to_owned()) {
+                        if let Ok(_token_data) = auth::JWT::parse(token.to_owned()) {
                             // TODO: Vérification en BDD
                             auth_success = true;
                         } else {
-                            println!("Failed to parse token: {}", token);
+                            eprintln!("Failed to parse token: {}", token);
                         }
                     }
                 }
@@ -81,14 +82,12 @@ where
             })
         } else {
             Box::pin(async move {
-                // By pass le middleware de log car auth::JWT::parse panic !!
                 Ok(req.into_response(
                     HttpResponse::Unauthorized()
-                        .json(crate::models::user::NewUser {
-                            lastname: "".to_owned(),
-                            firstname: "".to_owned(),
-                            email: "".to_owned(),
-                            password: "".to_owned(),
+                        .json(crate::errors::AppErrorMessage {
+                            code: StatusCode::UNAUTHORIZED.as_u16(),
+                            error: "Unauthorized".to_owned(),
+                            message: "Unauthorized".to_owned(),
                         })
                         .into_body(),
                 ))

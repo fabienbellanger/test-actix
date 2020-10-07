@@ -1,15 +1,21 @@
 use crate::handlers;
 use crate::handlers::users;
+use crate::middlewares;
 use actix_web::web;
 
 pub fn api(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/v1")
-            .route("/users", web::get().to(users::get_users))
-            .route("/users/{id}", web::get().to(users::get_by_id))
-            .route("/users", web::post().to(users::create))
-            .route("/users/{id}", web::put().to(users::update))
-            .route("/users/{id}", web::delete().to(users::delete)),
+            .route("/login", web::post().to(users::login))
+            .route("/register", web::post().to(users::create))
+            .service(
+                web::scope("/users")
+                    .wrap(middlewares::auth::Authentication)
+                    .route("", web::get().to(users::get_users))
+                    .route("/{id}", web::get().to(users::get_by_id))
+                    .route("/{id}", web::put().to(users::update))
+                    .route("/{id}", web::delete().to(users::delete)),
+            ),
     );
 }
 

@@ -1,6 +1,7 @@
 use crate::db::schema::users;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha512};
 use uuid::Uuid;
 
 #[derive(Queryable, Serialize, Deserialize, Insertable, Debug)]
@@ -20,10 +21,39 @@ pub struct NewUser {
     pub password: String,
 }
 
+#[derive(Deserialize, Debug)]
+pub struct Login {
+    pub email: String,
+    pub password: String,
+}
+
+#[derive(Serialize, Debug)]
+// TODO: Add expires_at
+pub struct LoginResponse {
+    pub lastname: String,
+    pub firstname: String,
+    pub email: String,
+    pub token: String,
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct UserList(pub Vec<User>);
 
 impl User {
+    pub fn login(
+        connection: &MysqlConnection,
+        user_login: Login,
+    ) -> Result<Self, diesel::result::Error> {
+        use crate::db::schema::users::dsl::*;
+
+        let hashed_password = format!("{:x}", Sha512::digest(&user_login.password.as_bytes()));
+        let user = users
+            .filter(email.eq(&user_login.email))
+            .filter(password.eq(&hashed_password))
+            .get_result::<User>(connection);
+        user
+    }
+
     pub fn create(
         connection: &MysqlConnection,
         new_user: NewUser,
@@ -33,7 +63,7 @@ impl User {
             lastname: new_user.lastname,
             firstname: new_user.firstname,
             email: new_user.email,
-            password: new_user.password, // TODO: To hash
+            password: format!("{:x}", Sha512::digest(&new_user.password.as_bytes())),
         };
 
         diesel::insert_into(users::table)

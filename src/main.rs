@@ -30,17 +30,6 @@ async fn main() -> std::io::Result<()> {
     // ------
     env_logger::from_env(Env::default().default_filter_or(settings.server_log_level)).init();
 
-    // Test JWT
-    let token = crate::models::auth::JWT::generate(
-        "user_id".to_owned(),
-        "user_lastname".to_owned(),
-        "user_firstname".to_owned(),
-        "user_email".to_owned(),
-    )
-    .unwrap();
-    dbg!(&token);
-    dbg!(crate::models::auth::JWT::parse(token).unwrap());
-
     // Start server
     // ------------
     HttpServer::new(move || {
@@ -51,7 +40,6 @@ async fn main() -> std::io::Result<()> {
                     .handler(http::StatusCode::NOT_FOUND, handlers::errors::render_404),
             )
             .wrap(Logger::new("%s | %r | %Ts | %{User-Agent}i | %a"))
-            .wrap(middlewares::timer::Timer)
             .wrap(
                 Cors::new()
                     // .allowed_origin("*")
@@ -64,7 +52,7 @@ async fn main() -> std::io::Result<()> {
                     .max_age(3600)
                     .finish(),
             )
-            //.wrap(middlewares::auth::Authentication)
+            .wrap(middlewares::timer::Timer)
             .service(
                 web::resource("/path").route(
                     web::route()
