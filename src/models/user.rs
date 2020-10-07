@@ -10,6 +10,7 @@ pub struct User {
     pub lastname: String,
     pub firstname: String,
     pub email: String,
+    #[serde(skip_serializing)]
     pub password: String,
 }
 
@@ -18,6 +19,7 @@ pub struct NewUser {
     pub lastname: String,
     pub firstname: String,
     pub email: String,
+    #[serde(skip_serializing)]
     pub password: String,
 }
 
