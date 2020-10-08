@@ -35,7 +35,7 @@ async fn main() -> std::io::Result<()> {
     // ------------
     HttpServer::new(move || {
         App::new()
-            .data(db::init(&db_url).expect("Failed to create pool."))
+            .data(db::init(&db_url).expect("Failed to create MySQL pool."))
             .wrap(
                 ErrorHandlers::new()
                     .handler(http::StatusCode::NOT_FOUND, handlers::errors::render_404),
