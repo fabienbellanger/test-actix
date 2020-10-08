@@ -2,9 +2,7 @@
 
 use crate::config::Config;
 use chrono::Utc;
-use jsonwebtoken::{
-    decode, encode, errors::Error, Algorithm, DecodingKey, EncodingKey, Header, Validation,
-};
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
 static ONE_MONTH: i64 = 60 * 60 * 24 * 30; // In seconds
@@ -43,10 +41,7 @@ impl JWT {
             user_firstname: user_firstname,
             user_email: user_email,
         };
-
-        let settings = Config::load()?;
-        let secret_key = settings.jwt_secret_key;
-
+        let secret_key = Config::load()?.jwt_secret_key;
         let token = encode(
             &header,
             &payload,
@@ -59,9 +54,7 @@ impl JWT {
     // Parse JWT
     pub fn parse(token: String) -> Result<Claims, Box<dyn std::error::Error>> {
         let validation = Validation::new(Algorithm::HS512);
-        let settings = Config::load()?;
-        let secret_key = settings.jwt_secret_key;
-
+        let secret_key = Config::load()?.jwt_secret_key;
         let token = decode::<Claims>(
             &token,
             &DecodingKey::from_secret(secret_key.as_bytes()),
