@@ -30,11 +30,11 @@ impl JWT {
         user_lastname: String,
         user_firstname: String,
         user_email: String,
-    ) -> Result<String, Error> {
+    ) -> Result<(String, i64), Box<dyn std::error::Error>> {
         let header = Header::new(Algorithm::HS512);
         let now = Utc::now().timestamp_nanos() / 1_000_000_000; // nanosecond -> second
         let payload = Claims {
-            sub: "User Autorization".to_owned(), // TODO: Change !
+            sub: user_id.clone(),
             exp: now + ONE_MONTH,
             iat: now,
             nbf: now,
@@ -44,8 +44,7 @@ impl JWT {
             user_email: user_email,
         };
 
-        // TODO: Faire mieux que charger tout le fichier !
-        let settings = Config::load().expect("Cannot find .env file");
+        let settings = Config::load()?;
         let secret_key = settings.jwt_secret_key;
 
         let token = encode(
@@ -54,15 +53,13 @@ impl JWT {
             &EncodingKey::from_secret(secret_key.as_bytes()),
         )?;
 
-        Ok(token)
+        Ok((token, now))
     }
 
     // Parse JWT
-    pub fn parse(token: String) -> Result<Claims, Error> {
+    pub fn parse(token: String) -> Result<Claims, Box<dyn std::error::Error>> {
         let validation = Validation::new(Algorithm::HS512);
-
-        // TODO: Faire mieux que charger tout le fichier !
-        let settings = Config::load().expect("Cannot find .env file");
+        let settings = Config::load()?;
         let secret_key = settings.jwt_secret_key;
 
         let token = decode::<Claims>(
@@ -81,6 +78,6 @@ mod tests {
 
     #[test]
     fn test_generate() {
-        // TODO: Faire test
+        unimplemented!();
     }
 }

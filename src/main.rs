@@ -10,6 +10,7 @@ mod routes;
 extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
+extern crate chrono;
 extern crate serde;
 
 use crate::config::Config;

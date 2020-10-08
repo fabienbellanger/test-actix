@@ -4,6 +4,7 @@ use crate::errors::AppError;
 use crate::models::auth::JWT;
 use crate::models::user::{Login, LoginResponse, NewUser, User, UserList};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
+use chrono::prelude::*;
 
 // Route: "/login"
 // curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/login \
@@ -31,12 +32,18 @@ pub async fn login(
     );
 
     match token {
-        Ok(token) => Ok(HttpResponse::Ok().json(LoginResponse {
-            lastname: user.lastname.to_owned(),
-            firstname: user.firstname.to_owned(),
-            email: user.email.to_owned(),
-            token,
-        })),
+        Ok(token) => {
+            let expires_at = chrono::NaiveDateTime::from_timestamp(token.1, 0);
+            let expires_at: DateTime<Utc> = DateTime::from_utc(expires_at, Utc);
+
+            Ok(HttpResponse::Ok().json(LoginResponse {
+                lastname: user.lastname.to_owned(),
+                firstname: user.firstname.to_owned(),
+                email: user.email.to_owned(),
+                token: token.0,
+                expires_at: expires_at.to_rfc3339_opts(SecondsFormat::Secs, true), // format("%Y-%m-%d %H:%M:%S").to_string(),
+            }))
+        }
         _ => Err(AppError::Unauthorized {}),
     }
 }
@@ -70,7 +77,6 @@ pub async fn get_users(
 ) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
-    // TODO: Faire une méthode sur User
     let users = web::block(move || UserList::list(&mysql_pool))
         .await
         .map_err(|e| {

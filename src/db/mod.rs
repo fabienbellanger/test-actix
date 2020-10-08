@@ -17,14 +17,13 @@ pub fn mysql_pool_handler(pool: web::Data<MysqlPool>) -> Result<MySqlPooledConne
     })
 }
 
-// TODO: Better error handling
 pub fn init(database_url: &str) -> Result<MysqlPool, PoolError> {
     let manager = ConnectionManager::<MysqlConnection>::new(database_url);
     let pool = Pool::builder().build(manager)?;
 
     // Run embedded database migrations
     embedded_migrations::run_with_output(
-        &pool.get().expect("Failed to migrate."),
+        &pool.get().expect("Failed to run database migrations."),
         &mut std::io::stdout(),
     )
     .expect("Failed to run database migrations.");

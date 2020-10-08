@@ -30,12 +30,12 @@ pub struct Login {
 }
 
 #[derive(Serialize, Debug)]
-// TODO: Add expires_at
 pub struct LoginResponse {
     pub lastname: String,
     pub firstname: String,
     pub email: String,
     pub token: String,
+    pub expires_at: String,
 }
 
 #[derive(Serialize, Deserialize)]
