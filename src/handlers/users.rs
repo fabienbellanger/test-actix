@@ -5,6 +5,7 @@ use crate::models::auth::JWT;
 use crate::models::user::{Login, LoginResponse, NewUser, User, UserList};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
 use chrono::prelude::*;
+use log::error;
 
 // Route: "/login"
 // curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/login \
@@ -18,7 +19,7 @@ pub async fn login(
     let user = web::block(move || User::login(&mysql_pool, form.into_inner()))
         .await
         .map_err(|e| {
-            eprintln!("{}", e);
+            error!("{}", e);
             AppError::Unauthorized {}
         })?;
 
@@ -60,7 +61,7 @@ pub async fn create(
     let user = web::block(move || User::create(&mysql_pool, form.into_inner()))
         .await
         .map_err(|e| {
-            eprintln!("{}", e);
+            error!("{}", e);
             AppError::InternalError {
                 message: "Error during user creation".to_owned(),
             }
@@ -80,7 +81,7 @@ pub async fn get_users(
     let users = web::block(move || UserList::list(&mysql_pool))
         .await
         .map_err(|e| {
-            eprintln!("{}", e);
+            error!("{}", e);
             AppError::InternalError {
                 message: "Error while retrieving users list".to_owned(),
             }
@@ -99,7 +100,7 @@ pub async fn get_by_id(
     let user = web::block(move || User::get_by_id(&mysql_pool, id))
         .await
         .map_err(|e| {
-            eprintln!("{}", e);
+            error!("{}", e);
             AppError::InternalError {
                 message: "Error while retrieving a user's information".to_owned(),
             }
@@ -118,7 +119,7 @@ pub async fn delete(
     let num_deleted = web::block(move || User::delete(&mysql_pool, id))
         .await
         .map_err(|e| {
-            eprintln!("{}", e);
+            error!("{}", e);
             AppError::InternalError {
                 message: "Error during user deletion".to_owned(),
             }

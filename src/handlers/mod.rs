@@ -4,8 +4,9 @@ pub mod users;
 use crate::errors::AppError;
 use crate::models;
 use actix_files::NamedFile;
-use actix_web::{get, web, Error, HttpRequest, HttpResponse, Responder, Result};
+use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
 use askama_actix::{Template, TemplateIntoResponse};
+use log::error;
 use std::path::PathBuf;
 
 pub async fn index() -> Result<impl Responder, AppError> {
@@ -108,9 +109,15 @@ struct HelloTemplate<'a> {
 }
 
 #[get("/templates")]
-// TODO: Utiliser AppError plutôt que Error
-pub async fn templates() -> Result<HttpResponse, Error> {
-    HelloTemplate { name: "world" }.into_response()
+pub async fn templates() -> Result<HttpResponse, AppError> {
+    HelloTemplate { name: "world" }
+        .into_response()
+        .map_err(|e| {
+            error!("{}", e);
+            AppError::InternalError {
+                message: "Failed to load HelloTemplate.".to_owned(),
+            }
+        })
 }
 
 #[cfg(test)]

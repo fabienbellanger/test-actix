@@ -12,6 +12,7 @@ use futures::{
     future::{ok, Ready},
     Future,
 };
+use log::error;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
@@ -76,7 +77,7 @@ where
                                 }
                             }
                         } else {
-                            eprintln!("Failed to parse token: {}", token);
+                            error!("Failed to parse token: {}", token);
                         }
                     }
                 }
