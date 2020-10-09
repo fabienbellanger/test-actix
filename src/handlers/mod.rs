@@ -4,7 +4,8 @@ pub mod users;
 use crate::errors::AppError;
 use crate::models;
 use actix_files::NamedFile;
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
+use actix_web::{get, web, Error, HttpRequest, HttpResponse, Responder, Result};
+use askama_actix::{Template, TemplateIntoResponse};
 use std::path::PathBuf;
 
 pub async fn index() -> Result<impl Responder, AppError> {
@@ -98,6 +99,18 @@ pub async fn big_json_stream(number: web::Path<u32>) -> HttpResponse {
     HttpResponse::Ok()
         .content_type("application/json")
         .streaming(stream)
+}
+
+#[derive(Template)]
+#[template(path = "hello.html")]
+struct HelloTemplate<'a> {
+    name: &'a str,
+}
+
+#[get("/templates")]
+// TODO: Utiliser AppError plutôt que Error
+pub async fn templates() -> Result<HttpResponse, Error> {
+    HelloTemplate { name: "world" }.into_response()
 }
 
 #[cfg(test)]

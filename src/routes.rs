@@ -30,5 +30,6 @@ pub fn web(cfg: &mut web::ServiceConfig) {
         .service(handlers::request)
         .service(handlers::json)
         .service(handlers::query)
+        .service(handlers::templates)
         .service(handlers::static_file);
 }
