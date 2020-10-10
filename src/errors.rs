@@ -1,5 +1,6 @@
 use actix_http::ResponseBuilder;
 use actix_web::{error, http::header, http::StatusCode, HttpResponse};
+use diesel::result::{DatabaseErrorKind, Error as DBError};
 use failure::Fail;
 use serde::Serialize;
 
@@ -54,6 +55,25 @@ impl error::ResponseError for AppError {
             AppError::Unauthorized => StatusCode::UNAUTHORIZED,
             AppError::NotFound { .. } => StatusCode::NOT_FOUND,
             AppError::Timeout => StatusCode::GATEWAY_TIMEOUT,
+        }
+    }
+}
+
+impl From<DBError> for AppError {
+    fn from(error: DBError) -> AppError {
+        match error {
+            DBError::DatabaseError(kind, info) => {
+                if let DatabaseErrorKind::UniqueViolation = kind {
+                    let message = info.details().unwrap_or_else(|| info.message()).to_string();
+                    return AppError::BadRequest { message };
+                }
+                AppError::InternalError {
+                    message: "Internal Server Error".to_owned(),
+                }
+            }
+            _ => AppError::InternalError {
+                message: "Internal Server Error".to_owned(),
+            },
         }
     }
 }
