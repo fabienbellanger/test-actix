@@ -20,12 +20,18 @@ use actix_web::middleware::Logger;
 use actix_web::{guard, http, web, App, HttpServer};
 use env_logger::Env;
 
+#[derive(Debug)]
+pub struct AppState {
+    pub jwt_secret_key: String,
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Load configuration
     // ------------------
     let settings = Config::load().expect("Cannot find .env file");
     let db_url = settings.database_url;
+    let jwt_secret_key = settings.jwt_secret_key;
 
     // Logger
     // ------
@@ -36,6 +42,9 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .data(db::init(&db_url).expect("Failed to create MySQL pool."))
+            .data(AppState {
+                jwt_secret_key: jwt_secret_key.clone(),
+            })
             .wrap(
                 ErrorHandlers::new()
                     .handler(http::StatusCode::NOT_FOUND, handlers::errors::render_404),

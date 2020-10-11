@@ -1,6 +1,5 @@
 //! JWT module
 
-use crate::config::Config;
 use chrono::Utc;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
@@ -28,6 +27,7 @@ impl JWT {
         user_lastname: String,
         user_firstname: String,
         user_email: String,
+        secret_key: String,
     ) -> Result<(String, i64), Box<dyn std::error::Error>> {
         let header = Header::new(Algorithm::HS512);
         let now = Utc::now().timestamp_nanos() / 1_000_000_000; // nanosecond -> second
@@ -41,7 +41,7 @@ impl JWT {
             user_firstname: user_firstname,
             user_email: user_email,
         };
-        let secret_key = Config::load()?.jwt_secret_key;
+
         let token = encode(
             &header,
             &payload,
@@ -52,9 +52,9 @@ impl JWT {
     }
 
     // Parse JWT
-    pub fn parse(token: String) -> Result<Claims, Box<dyn std::error::Error>> {
+    pub fn parse(token: String, secret_key: String) -> Result<Claims, Box<dyn std::error::Error>> {
         let validation = Validation::new(Algorithm::HS512);
-        let secret_key = Config::load()?.jwt_secret_key;
+
         let token = decode::<Claims>(
             &token,
             &DecodingKey::from_secret(secret_key.as_bytes()),

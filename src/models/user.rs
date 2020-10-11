@@ -39,6 +39,7 @@ pub struct LoginResponse {
 }
 
 #[derive(Serialize, Deserialize)]
+// TODO: Supprimer et mettre dans impl User
 pub struct UserList(pub Vec<User>);
 
 impl User {
@@ -111,6 +112,7 @@ impl User {
     }
 }
 
+// TODO: Supprimer et mettre dans impl User
 impl UserList {
     pub fn list(connection: &MysqlConnection) -> Result<Self, diesel::result::Error> {
         use crate::db::schema::users::dsl::*;

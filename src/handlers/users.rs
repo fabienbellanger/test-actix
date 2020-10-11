@@ -3,6 +3,7 @@ use crate::db::MysqlPool;
 use crate::errors::AppError;
 use crate::models::auth::JWT;
 use crate::models::user::{Login, LoginResponse, NewUser, User, UserList};
+use crate::AppState;
 use actix_web::{web, HttpRequest, HttpResponse, Result};
 use chrono::prelude::*;
 use log::error;
@@ -12,6 +13,7 @@ use log::error;
 // -d '{"email":"fabien.bellanger3@test.com", "password": "0000"}'
 pub async fn login(
     pool: web::Data<MysqlPool>,
+    data: web::Data<AppState>,
     form: web::Json<Login>,
 ) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
@@ -25,11 +27,13 @@ pub async fn login(
 
     // Génération du token
     // -------------------
+    let secret = &data.jwt_secret_key;
     let token = JWT::generate(
         user.id.to_owned(),
         user.lastname.to_owned(),
         user.firstname.to_owned(),
         user.email.to_owned(),
+        secret.to_owned(),
     );
 
     match token {
