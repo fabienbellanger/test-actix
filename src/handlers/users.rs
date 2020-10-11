@@ -82,6 +82,8 @@ pub async fn get_users(
 ) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
+    error!("Users list");
+
     let users = web::block(move || UserList::list(&mysql_pool))
         .await
         .map_err(|e| {
