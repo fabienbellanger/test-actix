@@ -1,7 +1,7 @@
 use crate::handlers;
 use crate::handlers::users;
 use crate::middlewares;
-use actix_web::web;
+use actix_web::{guard, web};
 
 pub fn api(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -31,5 +31,13 @@ pub fn web(cfg: &mut web::ServiceConfig) {
         .service(handlers::json)
         .service(handlers::query)
         .service(handlers::templates)
-        .service(handlers::static_file);
+        .service(handlers::static_file)
+        .service(
+            web::resource("/path").route(
+                web::route()
+                    .guard(guard::Get())
+                    .guard(guard::Header("content-type", "plain/text"))
+                    .to(handlers::index),
+            ),
+        );
 }

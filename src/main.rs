@@ -10,6 +10,7 @@ mod routes;
 extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
+
 extern crate chrono;
 extern crate serde;
 
@@ -17,7 +18,7 @@ use crate::config::Config;
 use actix_cors::Cors;
 use actix_web::middleware::errhandlers::ErrorHandlers;
 use actix_web::middleware::Logger;
-use actix_web::{guard, http, web, App, HttpServer};
+use actix_web::{http, App, HttpServer};
 use env_logger::Env;
 
 #[derive(Debug)]
@@ -63,14 +64,6 @@ async fn main() -> std::io::Result<()> {
                     .finish(),
             )
             .wrap(middlewares::timer::Timer)
-            .service(
-                web::resource("/path").route(
-                    web::route()
-                        .guard(guard::Get())
-                        .guard(guard::Header("content-type", "plain/text"))
-                        .to(handlers::index),
-                ),
-            )
             .configure(routes::api)
             .configure(routes::web)
     })
