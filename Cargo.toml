@@ -1,6 +1,6 @@
 [package]
 authors = ["Fabien Bellanger <valentil@gmail.com>"]
-description = "Actix-Web test"
+description = "Actix-web test"
 edition = "2018"
 name = "test-actix"
 readme = "README.md"
