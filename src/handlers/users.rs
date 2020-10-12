@@ -8,7 +8,7 @@ use actix_web::{web, HttpRequest, HttpResponse, Result};
 use chrono::prelude::*;
 use log::error;
 
-// Route: "/login"
+// Route: POST "/login"
 // curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/login \
 // -d '{"email":"fabien.bellanger3@test.com", "password": "0000"}'
 pub async fn login(
@@ -53,7 +53,7 @@ pub async fn login(
     }
 }
 
-// Route: "/register"
+// Route: POST "/register"
 // curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/register \
 // -d '{"lastname":"Bellanger", "firstname":"Fabien", "email":"fabien.bellanger3@test.com", "password": "0000"}'
 pub async fn create(
@@ -74,7 +74,7 @@ pub async fn create(
     Ok(HttpResponse::Ok().json(user))
 }
 
-// Route: "/users"
+// Route: GET "/users"
 // curl http://localhost:8089/v1/users -H 'Authorization: Bearer '
 pub async fn get_users(
     pool: web::Data<MysqlPool>,
@@ -95,7 +95,7 @@ pub async fn get_users(
     Ok(HttpResponse::Ok().json(users))
 }
 
-// Route: "/users/{id}
+// Route: GET "/users/{id}
 // curl http://localhost:8089/v1/users/<uuid>
 pub async fn get_by_id(
     pool: web::Data<MysqlPool>,
@@ -114,7 +114,7 @@ pub async fn get_by_id(
     Ok(HttpResponse::Ok().json(user))
 }
 
-// Route: "/users/{id}"
+// Route: DELETE "/users/{id}"
 // curl -X DELETE http://127.0.0.1:8089/v1/users/<uuid>
 pub async fn delete(
     web::Path(id): web::Path<String>,
@@ -139,7 +139,7 @@ pub async fn delete(
     }
 }
 
-// Route: "/users/{id}"
+// Route: PUT "/users/{id}"
 // curl -H "Content-Type: application/json" -X PUT http://127.0.0.1:8089/v1/users/<uuid> -d '{"lastname":"Bellanger", "firstname":"Fabien"}'
 pub async fn update(
     pool: web::Data<MysqlPool>,

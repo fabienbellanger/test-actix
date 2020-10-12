@@ -21,6 +21,7 @@ pub fn api(cfg: &mut web::ServiceConfig) {
 
 pub fn web(cfg: &mut web::ServiceConfig) {
     cfg.route("/", web::get().to(handlers::index))
+        .route("/ws", web::get().to(handlers::ws::index))
         .service(handlers::big_json)
         .service(handlers::big_json_stream)
         .service(handlers::internal_error)

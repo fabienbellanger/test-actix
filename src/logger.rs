@@ -38,7 +38,7 @@ pub fn init(level: String) {
 
             writeln!(
                 buf,
-                "{} [{}]{}{}{} - {}",
+                "{} [{}]{}{}{} | {}",
                 Local::now().format("%Y-%m-%dT%H:%M:%S"),
                 level_style.value(record.level()),
                 level_spaces,

@@ -6,6 +6,7 @@ mod logger;
 mod middlewares;
 mod models;
 mod routes;
+mod ws;
 
 #[macro_use]
 extern crate diesel;

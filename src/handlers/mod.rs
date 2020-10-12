@@ -1,5 +1,6 @@
 pub mod errors;
 pub mod users;
+pub mod ws;
 
 use crate::errors::AppError;
 use crate::models;
