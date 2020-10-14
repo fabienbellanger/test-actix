@@ -1,3 +1,5 @@
+//! Users handlers module
+
 use crate::db;
 use crate::db::MysqlPool;
 use crate::errors::AppError;

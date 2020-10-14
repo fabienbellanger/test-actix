@@ -1,3 +1,5 @@
+//! JWT middleware module
+
 use crate::models::{auth, user::User};
 use crate::AppState;
 use crate::{db, db::MysqlPool};

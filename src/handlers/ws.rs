@@ -1,11 +1,12 @@
-//! WebSocket handlers.
+//! WebSockets handlers.
 
 use crate::ws::WebSocket;
 use actix_web::{web, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
 use log::debug;
 
-/// Route: GET "/ws"
+/// Connect the client
+// Route: GET "/ws"
 // ws://127.0.0.1:8089/ws
 pub async fn index(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, Error> {
     let resp = ws::start(WebSocket {}, &req, stream);

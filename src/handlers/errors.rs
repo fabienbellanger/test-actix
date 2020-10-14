@@ -1,8 +1,11 @@
+//! Errors handlers module
+
 use actix_web::middleware::errhandlers::ErrorHandlerResponse;
 use actix_web::{body::Body, body::ResponseBody, dev, http};
 use actix_web::{error, http::StatusCode};
 use serde_json::json;
 
+/// Render 404 error
 // TODO: A factoriser !
 pub fn render_404<B>(
     mut res: dev::ServiceResponse<B>,

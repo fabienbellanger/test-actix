@@ -1,8 +1,11 @@
+//! List all server routes
+
 use crate::handlers;
 use crate::handlers::users;
 use crate::middlewares;
 use actix_web::{guard, web};
 
+/// Defines API's routes
 pub fn api(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/v1")
@@ -19,6 +22,7 @@ pub fn api(cfg: &mut web::ServiceConfig) {
     );
 }
 
+/// Defines web's routes
 pub fn web(cfg: &mut web::ServiceConfig) {
     cfg.route("/", web::get().to(handlers::index))
         .route("/ws", web::get().to(handlers::ws::index))

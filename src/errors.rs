@@ -1,9 +1,12 @@
+//! Custom error module
+
 use actix_http::ResponseBuilder;
 use actix_web::{error, http::header, http::StatusCode, HttpResponse};
 use diesel::result::{DatabaseErrorKind, Error as DBError};
 use failure::Fail;
 use serde::Serialize;
 
+/// Represents the custom error message
 #[derive(Serialize)]
 pub struct AppErrorMessage {
     pub code: u16,
@@ -11,6 +14,7 @@ pub struct AppErrorMessage {
     pub message: String,
 }
 
+/// Defines available errors
 #[derive(Fail, Debug)]
 pub enum AppError {
     #[fail(display = "{}", message)]

@@ -1,3 +1,5 @@
+//! Database module
+
 pub mod schema;
 
 use crate::errors::AppError;

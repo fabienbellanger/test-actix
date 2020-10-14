@@ -1,4 +1,4 @@
-//! Websockets module
+//! WebSockets module
 
 use actix::{Actor, ActorContext, StreamHandler};
 use actix_web_actors::ws;
@@ -28,7 +28,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
     }
 }
 
-/// Process text message from the client.
+/// Process text message from the client
 fn process_text_message(ctx: &mut actix_web_actors::ws::WebsocketContext<WebSocket>, msg: &str) {
     ctx.text(msg)
 }

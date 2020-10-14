@@ -1,3 +1,5 @@
+//! Handlers module
+
 pub mod errors;
 pub mod users;
 pub mod ws;

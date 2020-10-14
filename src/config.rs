@@ -1,7 +1,10 @@
+//! Configuration module
+
 use config;
 use dotenv;
 use serde::Deserialize;
 
+/// Represents configuration structure
 #[derive(Deserialize)]
 pub struct Config {
     pub environment: String,
@@ -13,6 +16,7 @@ pub struct Config {
 }
 
 impl Config {
+    /// Load environment configuration
     pub fn load() -> Result<Config, Box<dyn std::error::Error>> {
         dotenv::dotenv().ok();
 

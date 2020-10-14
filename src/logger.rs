@@ -1,4 +1,4 @@
-//! logger module for customize logs.
+//! Logger module for customize logs
 
 use chrono::Local;
 use env_logger::fmt::Color;
@@ -7,7 +7,7 @@ use log::LevelFilter;
 use log::{info, Level};
 use std::io::Write;
 
-/// Initialize logger.
+/// Initialize logger
 pub fn init(level: String) {
     let level = match &*level {
         "trace" => LevelFilter::Trace,
