@@ -11,8 +11,16 @@ use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
 use askama_actix::{Template, TemplateIntoResponse};
 use log::error;
 use std::path::PathBuf;
+use std::thread;
 
 pub async fn index() -> Result<impl Responder, AppError> {
+    thread::spawn(move || {
+        for i in 1..1_000_000 {
+            let _t = i + i;
+        }
+        println!("In thread...");
+    });
+    println!("After thread");
     Ok(HttpResponse::Ok().body("Hello world!"))
 }
 
