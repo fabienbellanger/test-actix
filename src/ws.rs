@@ -30,5 +30,9 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
 
 /// Process text message from the client
 fn process_text_message(ctx: &mut actix_web_actors::ws::WebsocketContext<WebSocket>, msg: &str) {
-    ctx.text(msg)
+    let mut s = msg.to_owned();
+    s.push_str(" - from server");
+
+    // Send message to the client
+    ctx.text(&s[..])
 }
