@@ -4,7 +4,7 @@ Actix-web framework test
 ## Benchmark
 Use [Drill](https://github.com/fcsonline/drill)
 ```bash
-$ drill --benchmark drill.yml --stats 
+$ drill --benchmark drill.yml --stats --quiet
 ```
 
 ## TODO list

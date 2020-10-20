@@ -7,3 +7,7 @@ plan:
     - name: Index
       request:
         url: /
+    
+    - name: Hello
+      request:
+        url: /hello/fabien/23
