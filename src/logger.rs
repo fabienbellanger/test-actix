@@ -3,8 +3,7 @@
 use chrono::Local;
 use env_logger::fmt::Color;
 use env_logger::Builder;
-use log::LevelFilter;
-use log::{info, Level};
+use log::{Level, LevelFilter};
 use std::io::Write;
 
 /// Initialize logger

@@ -9,7 +9,6 @@ use crate::models;
 use actix_files::NamedFile;
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
 use askama_actix::{Template, TemplateIntoResponse};
-use log::error;
 use std::path::PathBuf;
 use std::thread;
 

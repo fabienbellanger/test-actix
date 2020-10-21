@@ -2,7 +2,6 @@
 
 use actix::{Actor, ActorContext, StreamHandler};
 use actix_web_actors::ws;
-use log::debug;
 
 /// Define HTTP actor
 pub struct WebSocket;
