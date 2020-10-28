@@ -51,15 +51,14 @@ async fn main() -> std::io::Result<()> {
             })
             .wrap(
                 ErrorHandlers::new()
-                    .handler(http::StatusCode::NOT_FOUND, handlers::errors::render_404),
+                    .handler(http::StatusCode::NOT_FOUND, handlers::errors::render_404)
+                    .handler(http::StatusCode::INTERNAL_SERVER_ERROR, handlers::errors::render_500),
             )
             .wrap(Logger::new("%s | %r | %Ts | %{User-Agent}i | %a"))
             .wrap(
                 Cors::new()
                     // .allowed_origin("*")
-                    .allowed_methods(vec![
-                        "GET", "POST", "PATCH", "PUT", "DELETE", "HEAD", "OPTIONS",
-                    ])
+                    .allowed_methods(vec!["GET", "POST", "PATCH", "PUT", "DELETE", "HEAD", "OPTIONS"])
                     .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
                     .allowed_header(http::header::CONTENT_TYPE)
                     .supports_credentials()

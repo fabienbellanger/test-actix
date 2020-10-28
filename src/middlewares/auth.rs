@@ -64,27 +64,23 @@ where
 
         if Method::OPTIONS == *req.method() {
             auth_success = true;
-        } else {
-            if let Some(app_state) = req.app_data::<Data<AppState>>() {
-                let secret_key = &app_state.jwt_secret_key;
-                if let Some(auth_header) = req.headers().get(AUTHORIZATION) {
-                    if let Ok(auth_str) = auth_header.to_str() {
-                        if auth_str.starts_with("bearer") || auth_str.starts_with("Bearer") {
-                            let token = auth_str[6..auth_str.len()].trim();
-                            if let Ok(token_data) =
-                                auth::JWT::parse(token.to_owned(), secret_key.to_owned())
-                            {
-                                if let Some(pool) = req.app_data::<Data<MysqlPool>>() {
-                                    if let Ok(conn) = db::mysql_pool_handler(pool.clone()) {
-                                        let user = User::get_by_id(&conn, token_data.user_id);
-                                        if user.is_ok() {
-                                            auth_success = true;
-                                        }
+        } else if let Some(app_state) = req.app_data::<Data<AppState>>() {
+            let secret_key = &app_state.jwt_secret_key;
+            if let Some(auth_header) = req.headers().get(AUTHORIZATION) {
+                if let Ok(auth_str) = auth_header.to_str() {
+                    if auth_str.starts_with("bearer") || auth_str.starts_with("Bearer") {
+                        let token = auth_str[6..auth_str.len()].trim();
+                        if let Ok(token_data) = auth::JWT::parse(token.to_owned(), secret_key.to_owned()) {
+                            if let Some(pool) = req.app_data::<Data<MysqlPool>>() {
+                                if let Ok(conn) = db::mysql_pool_handler(pool.clone()) {
+                                    let user = User::get_by_id(&conn, token_data.user_id);
+                                    if user.is_ok() {
+                                        auth_success = true;
                                     }
                                 }
-                            } else {
-                                error!("Failed to parse token: {}", token);
                             }
+                        } else {
+                            error!("Failed to parse token: {}", token);
                         }
                     }
                 }

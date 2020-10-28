@@ -1,7 +1,5 @@
 //! Configuration module
 
-use config;
-use dotenv;
 use serde::Deserialize;
 
 /// Represents configuration structure

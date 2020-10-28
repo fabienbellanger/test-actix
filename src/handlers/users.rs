@@ -45,7 +45,7 @@ pub async fn login(
             Ok(HttpResponse::Ok().json(LoginResponse {
                 lastname: user.lastname.to_owned(),
                 firstname: user.firstname.to_owned(),
-                email: user.email.to_owned(),
+                email: user.email,
                 token: token.0,
                 expires_at: expires_at.to_rfc3339_opts(SecondsFormat::Secs, true), // format("%Y-%m-%d %H:%M:%S").to_string(),
             }))
@@ -57,10 +57,7 @@ pub async fn login(
 // Route: POST "/register"
 // curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/register \
 // -d '{"lastname":"Bellanger", "firstname":"Fabien", "email":"fabien.bellanger3@test.com", "password": "0000"}'
-pub async fn create(
-    pool: web::Data<MysqlPool>,
-    form: web::Json<NewUser>,
-) -> Result<HttpResponse, AppError> {
+pub async fn create(pool: web::Data<MysqlPool>, form: web::Json<NewUser>) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
     let user = web::block(move || User::create(&mysql_pool, form.into_inner()))
@@ -77,31 +74,23 @@ pub async fn create(
 
 // Route: GET "/users"
 // curl http://localhost:8089/v1/users -H 'Authorization: Bearer '
-pub async fn get_users(
-    pool: web::Data<MysqlPool>,
-    _req: HttpRequest,
-) -> Result<HttpResponse, AppError> {
+pub async fn get_users(pool: web::Data<MysqlPool>, _req: HttpRequest) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
     error!("Users list");
 
-    let users = web::block(move || UserList::list(&mysql_pool))
-        .await
-        .map_err(|e| {
-            error!("{}", e);
-            AppError::InternalError {
-                message: "Error while retrieving users list".to_owned(),
-            }
-        })?;
+    let users = web::block(move || UserList::list(&mysql_pool)).await.map_err(|e| {
+        error!("{}", e);
+        AppError::InternalError {
+            message: "Error while retrieving users list".to_owned(),
+        }
+    })?;
     Ok(HttpResponse::Ok().json(users))
 }
 
 // Route: GET "/users/{id}
 // curl http://localhost:8089/v1/users/<uuid>
-pub async fn get_by_id(
-    pool: web::Data<MysqlPool>,
-    web::Path(id): web::Path<String>,
-) -> Result<HttpResponse, AppError> {
+pub async fn get_by_id(pool: web::Data<MysqlPool>, web::Path(id): web::Path<String>) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
     let user = web::block(move || User::get_by_id(&mysql_pool, id))
@@ -117,20 +106,15 @@ pub async fn get_by_id(
 
 // Route: DELETE "/users/{id}"
 // curl -X DELETE http://127.0.0.1:8089/v1/users/<uuid>
-pub async fn delete(
-    web::Path(id): web::Path<String>,
-    pool: web::Data<MysqlPool>,
-) -> Result<HttpResponse, AppError> {
+pub async fn delete(web::Path(id): web::Path<String>, pool: web::Data<MysqlPool>) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
-    let num_deleted = web::block(move || User::delete(&mysql_pool, id))
-        .await
-        .map_err(|e| {
-            error!("{}", e);
-            AppError::InternalError {
-                message: "Error during user deletion".to_owned(),
-            }
-        })?;
+    let num_deleted = web::block(move || User::delete(&mysql_pool, id)).await.map_err(|e| {
+        error!("{}", e);
+        AppError::InternalError {
+            message: "Error during user deletion".to_owned(),
+        }
+    })?;
 
     match num_deleted {
         0 => Err(AppError::NotFound {

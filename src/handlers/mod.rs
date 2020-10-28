@@ -39,23 +39,16 @@ pub async fn internal_error() -> Result<&'static str, AppError> {
 
 #[get("/not-found")]
 pub async fn not_found() -> Result<&'static str, AppError> {
-    Err(AppError::NotFound {
-        message: "".to_owned(),
-    })
+    Err(AppError::NotFound { message: "".to_owned() })
 }
 
 #[get("/hello/{name}/{age}")]
 pub async fn hello(info: web::Path<models::Info>) -> Result<impl Responder, AppError> {
-    Ok(HttpResponse::Ok().body(format!(
-        "My name is {} and i am {} years old.",
-        info.name, info.age
-    )))
+    Ok(HttpResponse::Ok().body(format!("My name is {} and i am {} years old.", info.name, info.age)))
 }
 
 #[get("/test/{string}/{int}")]
-pub async fn test(
-    web::Path((string, int)): web::Path<(String, i32)>,
-) -> Result<impl Responder, AppError> {
+pub async fn test(web::Path((string, int)): web::Path<(String, i32)>) -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().body(format!("Test: string={} and int={}.", string, int)))
 }
 
@@ -63,11 +56,7 @@ pub async fn test(
 pub async fn request(req: HttpRequest) -> Result<impl Responder, AppError> {
     let (string, int): (String, u8) = match req.match_info().load() {
         Ok((s, i)) => (s, i),
-        Err(e) => {
-            return Err(AppError::BadRequest {
-                message: e.to_string(),
-            })
-        }
+        Err(e) => return Err(AppError::BadRequest { message: e.to_string() }),
     };
     Ok(HttpResponse::Ok().body(format!("Test: string={} and int={}.", string, int)))
 }
@@ -107,9 +96,7 @@ pub async fn big_json_stream(number: web::Path<u32>) -> HttpResponse {
         buf: Default::default(),
     };
 
-    HttpResponse::Ok()
-        .content_type("application/json")
-        .streaming(stream)
+    HttpResponse::Ok().content_type("application/json").streaming(stream)
 }
 
 #[derive(Template)]
@@ -120,14 +107,12 @@ struct HelloTemplate<'a> {
 
 #[get("/templates")]
 pub async fn templates() -> Result<HttpResponse, AppError> {
-    HelloTemplate { name: "world" }
-        .into_response()
-        .map_err(|e| {
-            error!("{}", e);
-            AppError::InternalError {
-                message: "Failed to load HelloTemplate.".to_owned(),
-            }
-        })
+    HelloTemplate { name: "world" }.into_response().map_err(|e| {
+        error!("{}", e);
+        AppError::InternalError {
+            message: "Failed to load HelloTemplate.".to_owned(),
+        }
+    })
 }
 
 #[cfg(test)]
@@ -152,9 +137,7 @@ mod tests {
     async fn test_request_ok() {
         let mut app = test::init_service(App::new().service(request)).await;
 
-        let req = test::TestRequest::get()
-            .uri("/request/toto/12")
-            .to_request();
+        let req = test::TestRequest::get().uri("/request/toto/12").to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
 

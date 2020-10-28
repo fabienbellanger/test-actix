@@ -29,7 +29,7 @@ pub fn init(level: String) {
                 Level::Error => (Color::Red, " "),
             };
 
-            level_style.set_color(color.clone()).set_bold(true);
+            level_style.set_color(color).set_bold(true);
             let line = match record.line() {
                 Some(line) => format!(":{}", line),
                 None => "".to_owned(),

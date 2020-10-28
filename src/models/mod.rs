@@ -59,9 +59,7 @@ impl futures::Stream for TaskStream {
                 &Task {
                     id: this.next,
                     name: "Coucou ceci est mon nom",
-                    message: String::from(
-                        "Mon message doit être un peu long pour augmenter la taille",
-                    ),
+                    message: String::from("Mon message doit être un peu long pour augmenter la taille"),
                 },
             );
 
