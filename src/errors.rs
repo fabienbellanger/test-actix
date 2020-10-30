@@ -3,7 +3,7 @@
 use actix_http::ResponseBuilder;
 use actix_web::{error, http::header, http::StatusCode, HttpResponse};
 use diesel::result::{DatabaseErrorKind, Error as DBError};
-use failure::Fail;
+use failure::Fail; // TODO: Deprecated
 use serde::Serialize;
 
 /// Represents the custom error message
@@ -32,11 +32,11 @@ pub enum AppError {
 impl AppError {
     pub fn name(&self) -> String {
         match self {
-            Self::NotFound { message: _ } => "Not Found".to_string(),
-            Self::BadRequest { message: _ } => "Bad Request".to_string(),
-            Self::Unauthorized => "Unauthorized".to_string(),
-            Self::InternalError { message: _ } => "Internal Server Error".to_string(),
-            Self::Timeout => "Bad Gateway".to_string(),
+            Self::NotFound { message: _ } => "Not Found".to_owned(),
+            Self::BadRequest { message: _ } => "Bad Request".to_owned(),
+            Self::Unauthorized => "Unauthorized".to_owned(),
+            Self::InternalError { message: _ } => "Internal Server Error".to_owned(),
+            Self::Timeout => "Bad Gateway".to_owned(),
         }
     }
 }
