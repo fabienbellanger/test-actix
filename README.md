@@ -12,4 +12,4 @@ $ drill --benchmark drill.yml --stats --quiet
 -  [x] [Auto migrations](https://docs.rs/diesel_migrations/1.4.0/diesel_migrations/)
 -  [x] [Askama](https://github.com/djc/askama) [avec Actix-web](https://github.com/djc/askama/tree/main/askama_actix)
 -  [ ] Commenter le code
--  [ ] [Remplacer failure par derive_more ](https://actix.rs/docs/errors/)
+-  [x] [Remplacer failure par derive_more ](https://actix.rs/docs/errors/)

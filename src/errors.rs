@@ -2,8 +2,8 @@
 
 use actix_http::ResponseBuilder;
 use actix_web::{error, http::header, http::StatusCode, HttpResponse};
+use derive_more::{Display, Error};
 use diesel::result::{DatabaseErrorKind, Error as DBError};
-use failure::Fail; // TODO: Deprecated
 use serde::Serialize;
 
 /// Represents the custom error message
@@ -15,27 +15,27 @@ pub struct AppErrorMessage {
 }
 
 /// Defines available errors
-#[derive(Fail, Debug)]
+#[derive(Debug, Display, Error)]
 pub enum AppError {
-    #[fail(display = "{}", message)]
+    #[display(fmt = "{}", message)]
     InternalError { message: String },
-    #[fail(display = "{}", message)]
+    #[display(fmt = "{}", message)]
     BadRequest { message: String },
-    #[fail(display = "{}", message)]
+    #[display(fmt = "{}", message)]
     NotFound { message: String },
-    #[fail(display = "Timeout")]
+    #[display(fmt = "Timeout")]
     Timeout,
-    #[fail(display = "Unauthorized")]
+    #[display(fmt = "Unauthorized")]
     Unauthorized,
 }
 
 impl AppError {
     pub fn name(&self) -> String {
         match self {
-            Self::NotFound { message: _ } => "Not Found".to_owned(),
-            Self::BadRequest { message: _ } => "Bad Request".to_owned(),
+            Self::NotFound { message: m } => m.to_owned(),
+            Self::BadRequest { message: m } => m.to_owned(),
             Self::Unauthorized => "Unauthorized".to_owned(),
-            Self::InternalError { message: _ } => "Internal Server Error".to_owned(),
+            Self::InternalError { message: m } => m.to_owned(),
             Self::Timeout => "Bad Gateway".to_owned(),
         }
     }
