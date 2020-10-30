@@ -57,12 +57,12 @@ impl JWT {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    // use super::*;
+// #[cfg(test)]
+// mod tests {
+//     // use super::*;
 
-    #[test]
-    fn test_generate() {
-        unimplemented!();
-    }
-}
+//     #[test]
+//     fn test_generate() {
+//         unimplemented!();
+//     }
+// }
