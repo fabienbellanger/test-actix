@@ -1,4 +1,5 @@
 pub mod auth;
+pub mod release;
 pub mod user;
 
 use actix_web::{web::Bytes, Error};

@@ -1,17 +1,15 @@
 //! Handlers module
 
 pub mod errors;
+pub mod releases;
 pub mod users;
 pub mod ws;
 
 use crate::errors::AppError;
 use crate::models;
 use actix_files::NamedFile;
-use actix_web::{get, http::StatusCode, web, HttpRequest, HttpResponse, Responder, Result};
+use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
 use askama_actix::{Template, TemplateIntoResponse};
-use reqwest::header::USER_AGENT;
-use serde::{Deserialize, Serialize};
-use serde_json;
 use std::path::PathBuf;
 use std::thread;
 
@@ -116,58 +114,6 @@ pub async fn templates() -> Result<HttpResponse, AppError> {
             message: "Failed to load HelloTemplate.".to_owned(),
         }
     })
-}
-
-/// Github API
-pub async fn github(req: HttpRequest) -> Result<HttpResponse, AppError> {
-    let (user, repo): (String, String) = match req.match_info().load() {
-        Ok((u, r)) => (u, r),
-        Err(e) => return Err(AppError::BadRequest { message: e.to_string() }),
-    };
-
-    let url = format!("https://api.github.com/repos/{}/{}/releases/latest", user, repo);
-
-    // TODO: Utiliser actix_web::HttpResponse ?
-    let client = reqwest::Client::new();
-    let resp = client
-        .get(&url)
-        .header(USER_AGENT, "test-actix")
-        .send()
-        .await
-        .map_err(|e| {
-            error!("{}", e);
-            AppError::Unauthorized {}
-        })?;
-
-    match resp.status() {
-        StatusCode::OK => {
-            let resp = resp.text().await.map_err(|_| AppError::InternalError {
-                message: "Github request error".to_owned(),
-            })?;
-
-            #[derive(Serialize, Deserialize, Debug)]
-            struct Release {
-                name: String,
-                tag_name: String,
-                created_at: String,
-                published_at: String,
-                body: String,
-                #[serde(rename(serialize = "url"))]
-                html_url: String,
-            }
-
-            let release: Release = serde_json::from_str(&resp.to_string()).map_err(|_| AppError::InternalError {
-                message: "Error while parsing Github response".to_owned(),
-            })?;
-            Ok(HttpResponse::Ok().json(release))
-        }
-        StatusCode::NOT_FOUND => Err(AppError::NotFound {
-            message: "Last release not found".to_owned(),
-        }),
-        _ => Err(AppError::InternalError {
-            message: "Github response error".to_owned(),
-        }),
-    }
 }
 
 #[cfg(test)]
