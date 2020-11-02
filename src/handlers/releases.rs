@@ -1,10 +1,11 @@
 //! Github handler module
 
 use crate::errors::AppError;
-use crate::models::release::Release;
+use crate::models::release::{Project, Release};
 use actix_web::{http::StatusCode, HttpRequest, HttpResponse, Result};
 use reqwest::header::USER_AGENT;
 use serde_json;
+use std::fs::File;
 
 // Route: GET "/github/{username}/{repository}"
 // curl -H "Content-Type: application/json" http://127.0.0.1:8089/github/actix/actix-web
@@ -41,4 +42,16 @@ pub async fn github(req: HttpRequest) -> Result<HttpResponse, AppError> {
             message: "Github response error".to_owned(),
         }),
     }
+}
+
+// Route: GET "/github/all"
+// curl -H "Content-Type: application/json" http://127.0.0.1:8089/github/all
+pub async fn github_all() -> Result<HttpResponse, AppError> {
+    // TODO: Gérer les erreurs et mettre dans une méthode
+    let projects: Vec<Project> = serde_json::from_reader(File::open("projects.json").unwrap()).unwrap();
+    dbg!(&projects);
+
+    // TODO: Mettre dans une boucle et lancer des threads
+
+    Ok(HttpResponse::Ok().json(projects))
 }

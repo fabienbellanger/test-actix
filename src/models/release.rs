@@ -2,6 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
+// pub type Releases = Vec<Release>;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Release {
     pub name: String,
@@ -11,4 +13,10 @@ pub struct Release {
     pub body: String,
     pub created_at: String,
     pub published_at: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Project {
+    pub name: String,
+    pub url: String,
 }

@@ -27,6 +27,7 @@ pub fn web(cfg: &mut web::ServiceConfig) {
     cfg.route("/", web::get().to(handlers::index))
         .route("/ws", web::get().to(handlers::ws::index))
         .route("/github/{user}/{repo}", web::get().to(releases::github))
+        .route("/github/all", web::get().to(releases::github_all))
         .service(handlers::big_json)
         .service(handlers::big_json_stream)
         .service(handlers::internal_error)
