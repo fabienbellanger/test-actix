@@ -6,6 +6,8 @@ use actix_web::{http::StatusCode, HttpRequest, HttpResponse, Result};
 use reqwest::header::USER_AGENT;
 use serde_json;
 use std::fs::File;
+use std::sync::{mpsc::channel, mpsc::Receiver, mpsc::Sender, Arc, Mutex};
+use std::thread;
 
 // Route: GET "/github/{username}/{repository}"
 // curl -H "Content-Type: application/json" http://127.0.0.1:8089/github/actix/actix-web
@@ -53,5 +55,56 @@ pub async fn github_all() -> Result<HttpResponse, AppError> {
 
     // TODO: Mettre dans une boucle et lancer des threads
 
-    Ok(HttpResponse::Ok().json(projects))
+    // fn main() {
+    //     let data = Arc::new(Mutex::new(0u32));
+
+    //     // on crée le channel
+    //     let (tx, rx) = mpsc::channel();
+
+    //     for _ in 0..10 {
+    //         let (data, tx) = (data.clone(), tx.clone());
+
+    //         thread::spawn(move || {
+    //             let mut data = data.lock().unwrap();
+    //             *data += 1;
+
+    //             // on envoie le signal de fin du thread
+    //             tx.send(());
+    //         });
+    //     }
+
+    //     for _ in 0..10 {
+    //         // on attend le signal de fin du thread
+    //         rx.recv();
+    //     }
+    // }
+
+    // let releases = Arc::new(Mutex::new(projects));
+
+    // // On crée le channel
+    // let (tx, rx): (Sender<Project>, Receiver<Project>) = channel();
+
+    // for _ in 0..10 {
+    //         let (data, tx) = (data.clone(), tx.clone());
+
+    //         thread::spawn(move || {
+    //             let mut data = data.lock().unwrap();
+    //             *data += 1;
+
+    //             // on envoie le signal de fin du thread
+    //             tx.send(());
+    //         });
+    //     }
+
+    //     for _ in 0..10 {
+    //         // on attend le signal de fin du thread
+    //         rx.recv();
+    //     }
+    // }
+
+    for project in projects {
+        println!("{:?}", project.get_info().await?);
+    }
+
+    Ok(HttpResponse::Ok().body("Github projects"))
 }
