@@ -4,16 +4,17 @@ use crate::errors::AppError;
 use actix_web::{http::StatusCode, Result};
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
+use std::sync::{Arc, Mutex};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Release {
-    pub name: String,
-    pub tag_name: String,
+    // pub name: String,
+    // pub tag_name: String,
     #[serde(rename(serialize = "url"))]
     pub html_url: String,
-    pub body: String,
-    pub created_at: String,
-    pub published_at: String,
+    // pub body: String,
+    // pub created_at: String,
+    // pub published_at: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -24,19 +25,18 @@ pub struct Project {
 
 impl Project {
     /// Get reprository information from Github
-    pub async fn get_info(self) -> Result<Release, AppError> {
+    pub fn get_info(self) -> Result<Release, AppError> {
         let url = format!("https://api.github.com/repos/{}/releases/latest", self.url);
-        let client = reqwest::Client::new();
+        let client = reqwest::blocking::Client::new();
         let resp = client
             .get(&url)
-            .header(USER_AGENT, "test-actix")
+            .header(USER_AGENT, "test-actix 1")
             .send()
-            .await
             .map_err(|_| AppError::Unauthorized {})?;
 
         match resp.status() {
             StatusCode::OK => {
-                let resp = resp.text().await.map_err(|_| AppError::InternalError {
+                let resp = resp.text().map_err(|_| AppError::InternalError {
                     message: "Github request error".to_owned(),
                 })?;
 
@@ -49,9 +49,45 @@ impl Project {
             StatusCode::NOT_FOUND => Err(AppError::NotFound {
                 message: "Last release not found".to_owned(),
             }),
+            StatusCode::FORBIDDEN => {
+                let resp = resp.text().map_err(|_| AppError::InternalError {
+                    message: "Github request error".to_owned(),
+                })?;
+
+                Err(AppError::InternalError { message: resp })
+            }
             _ => Err(AppError::InternalError {
                 message: "Github response error".to_owned(),
             }),
         }
+    }
+}
+
+impl Release {
+    pub async fn get_all(projects: Vec<Project>) -> Vec<Release> {
+        let releases = Arc::new(Mutex::new(vec![]));
+        let mut threads = vec![];
+
+        for project in projects {
+            threads.push(std::thread::spawn({
+                let clone = Arc::clone(&releases);
+
+                move || {
+                    let mut r = clone.lock().unwrap(); // TODO: Error handling
+                    r.push(project.get_info().unwrap());
+                }
+            }));
+        }
+
+        for t in threads {
+            t.join().unwrap();
+        }
+
+        let mut r: Vec<Release> = Vec::new();
+        for release in releases.lock().unwrap().iter() {
+            r.push(release.clone());
+        }
+
+        r
     }
 }
