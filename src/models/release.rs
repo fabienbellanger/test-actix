@@ -8,13 +8,13 @@ use std::sync::{Arc, Mutex};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Release {
-    // pub name: String,
-    // pub tag_name: String,
+    pub name: String,
+    pub tag_name: String,
     #[serde(rename(serialize = "url"))]
     pub html_url: String,
-    // pub body: String,
-    // pub created_at: String,
-    // pub published_at: String,
+    pub body: String,
+    pub created_at: String,
+    pub published_at: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -24,7 +24,7 @@ pub struct Project {
 }
 
 impl Project {
-    /// Get reprository information from Github
+    /// Get repository information from Github API
     pub fn get_info(self) -> Result<Release, AppError> {
         let url = format!("https://api.github.com/repos/{}/releases/latest", self.url);
         let client = reqwest::blocking::Client::new();
@@ -64,6 +64,7 @@ impl Project {
 }
 
 impl Release {
+    /// Get all releases from Github API
     pub async fn get_all(projects: Vec<Project>) -> Vec<Release> {
         let releases = Arc::new(Mutex::new(vec![]));
         let mut threads = vec![];
@@ -83,11 +84,11 @@ impl Release {
             t.join().unwrap();
         }
 
-        let mut r: Vec<Release> = Vec::new();
+        let mut list: Vec<Release> = Vec::new();
         for release in releases.lock().unwrap().iter() {
-            r.push(release.clone());
+            list.push(release.clone());
         }
 
-        r
+        list
     }
 }
