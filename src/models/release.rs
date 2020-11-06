@@ -25,17 +25,19 @@ pub struct Project {
 
 impl Project {
     /// Get repository information from Github API
-    pub fn get_info(self) -> Result<Release, AppError> {
+    pub fn get_info(self, github_username: String, github_token: String) -> Result<Release, AppError> {
         let url = format!("https://api.github.com/repos/{}/releases/latest", self.url);
         let client = reqwest::blocking::Client::new();
         let resp = client
             .get(&url)
-            .header(USER_AGENT, "test-actix 1")
+            .header(USER_AGENT, "test-actix")
+            .basic_auth(github_username, Some(github_token))
             .send()
             .map_err(|_| AppError::Unauthorized {})?;
 
         match resp.status() {
             StatusCode::OK => {
+                // dbg!(resp.headers()); // TODO: A supprimer
                 let resp = resp.text().map_err(|_| AppError::InternalError {
                     message: "Github request error".to_owned(),
                 })?;
@@ -65,19 +67,28 @@ impl Project {
 
 impl Release {
     /// Get all releases from Github API
-    pub async fn get_all(projects: Vec<Project>) -> Vec<Release> {
+    /// TODO: La concurrence ne fonctionne pas bien.
+    /// Les requêtes GitHub étant bloquantes, elles semblent s'exécuter séquentiellement.
+    pub async fn get_all(projects: Vec<Project>, github_username: &String, github_token: &String) -> Vec<Release> {
         let releases = Arc::new(Mutex::new(vec![]));
         let mut threads = vec![];
 
+        let mut i = 1;
         for project in projects {
             threads.push(std::thread::spawn({
+                info!("===> In thread {}", i);
                 let clone = Arc::clone(&releases);
+                let username = github_username.clone();
+                let token = github_token.clone();
 
                 move || {
                     let mut r = clone.lock().unwrap(); // TODO: Error handling
-                    r.push(project.get_info().unwrap());
+                    info!("===> Before get_info: {}", i);
+                    r.push(project.get_info(username, token).unwrap());
+                    info!("===> After get_info: {}", i);
                 }
             }));
+            i += 1;
         }
 
         for t in threads {

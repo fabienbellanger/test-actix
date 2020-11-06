@@ -11,6 +11,8 @@ pub struct Config {
     pub server_log_level: String,
     pub jwt_secret_key: String,
     pub database_url: String,
+    pub github_api_username: String,
+    pub github_api_token: String,
 }
 
 impl Config {

@@ -27,6 +27,8 @@ use actix_web::{http, App, HttpServer};
 #[derive(Debug)]
 pub struct AppState {
     pub jwt_secret_key: String,
+    pub github_api_username: String,
+    pub github_api_token: String,
 }
 
 #[actix_web::main]
@@ -36,6 +38,8 @@ async fn main() -> std::io::Result<()> {
     let settings = Config::load().expect("Cannot find .env file");
     let db_url = settings.database_url;
     let jwt_secret_key = settings.jwt_secret_key;
+    let github_api_username = settings.github_api_username;
+    let github_api_token = settings.github_api_token;
 
     // Logger
     // ------
@@ -48,6 +52,8 @@ async fn main() -> std::io::Result<()> {
             .data(db::init(&db_url).expect("Failed to create MySQL pool."))
             .data(AppState {
                 jwt_secret_key: jwt_secret_key.clone(),
+                github_api_username: github_api_username.clone(),
+                github_api_token: github_api_token.clone(),
             })
             .wrap(
                 ErrorHandlers::new()
