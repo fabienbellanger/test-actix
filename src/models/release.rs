@@ -37,7 +37,6 @@ impl Project {
 
         match resp.status() {
             StatusCode::OK => {
-                // dbg!(resp.headers()); // TODO: A supprimer
                 let resp = resp.text().map_err(|_| AppError::InternalError {
                     message: "Github request error".to_owned(),
                 })?;
@@ -70,6 +69,7 @@ impl Release {
     /// TODO: La concurrence ne fonctionne pas bien.
     /// Les requêtes GitHub étant bloquantes, elles semblent s'exécuter séquentiellement.
     /// Essayer avec des Futures (async) et join!() (https://rust-lang.github.io/async-book/06_multiple_futures/02_join.html)
+    /// ou https://docs.rs/futures/0.3.8/futures/future/fn.join_all.html
     pub async fn get_all(projects: Vec<Project>, github_username: &String, github_token: &String) -> Vec<Release> {
         let releases = Arc::new(Mutex::new(vec![]));
         let mut threads = vec![];
