@@ -62,6 +62,46 @@ impl Project {
             }),
         }
     }
+
+    /// Get repository information from Github API
+    pub async fn get_info_async(self, github_username: String, github_token: String) -> Result<Release, AppError> {
+        let url = format!("https://api.github.com/repos/{}/releases/latest", self.url);
+        let client = reqwest::Client::new();
+        let resp = client
+            .get(&url)
+            .header(USER_AGENT, "test-actix")
+            .basic_auth(github_username, Some(github_token))
+            .send()
+            .await
+            .map_err(|_| AppError::Unauthorized {})?;
+
+        match resp.status() {
+            StatusCode::OK => {
+                let resp = resp.text().await.map_err(|_| AppError::InternalError {
+                    message: "Github request error".to_owned(),
+                })?;
+
+                let release: Release =
+                    serde_json::from_str(&resp.to_string()).map_err(|_| AppError::InternalError {
+                        message: "Error while parsing Github response".to_owned(),
+                    })?;
+                Ok(release)
+            }
+            StatusCode::NOT_FOUND => Err(AppError::NotFound {
+                message: "Last release not found".to_owned(),
+            }),
+            StatusCode::FORBIDDEN => {
+                let resp = resp.text().await.map_err(|_| AppError::InternalError {
+                    message: "Github request error".to_owned(),
+                })?;
+
+                Err(AppError::InternalError { message: resp })
+            }
+            _ => Err(AppError::InternalError {
+                message: "Github response error".to_owned(),
+            }),
+        }
+    }
 }
 
 impl Release {
@@ -70,6 +110,9 @@ impl Release {
     /// Les requêtes GitHub étant bloquantes, elles semblent s'exécuter séquentiellement.
     /// Essayer avec des Futures (async) et join!() (https://rust-lang.github.io/async-book/06_multiple_futures/02_join.html)
     /// ou https://docs.rs/futures/0.3.8/futures/future/fn.join_all.html
+    /// ou https://blog.logrocket.com/a-practical-guide-to-async-in-rust/
+    /// with missing : "use tokio::task;"
+    /// and https://github.com/tensor-programming/crawler_example/blob/master/src/main.rs
     pub async fn get_all(projects: Vec<Project>, github_username: &String, github_token: &String) -> Vec<Release> {
         let releases = Arc::new(Mutex::new(vec![]));
         let mut threads = vec![];
