@@ -5,6 +5,7 @@ use actix_web::{http::StatusCode, Result};
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
+use tokio::task;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Release {
@@ -138,6 +139,40 @@ impl Release {
         for t in threads {
             t.join().unwrap();
         }
+
+        let mut list: Vec<Release> = Vec::new();
+        for release in releases.lock().unwrap().iter() {
+            list.push(release.clone());
+        }
+
+        list
+    }
+
+    pub async fn get_all_async(
+        projects: Vec<Project>,
+        github_username: &String,
+        github_token: &String,
+    ) -> Vec<Release> {
+        let mut tasks = vec![];
+        let releases = Arc::new(Mutex::new(vec![]));
+
+        for project in projects {
+            let clone = Arc::clone(&releases);
+            let username = github_username.clone();
+            let token = github_token.clone();
+
+            let task = task::spawn(async move {
+                info!("===> In thread {:?}", project);
+
+                let mut r = clone.lock().unwrap();
+                info!("===> Before get_info");
+                r.push(project.get_info(username, token).unwrap());
+                info!("===> After get_info");
+            });
+            tasks.push(task);
+        }
+
+        println!("tasks: {:?}", tasks);
 
         let mut list: Vec<Release> = Vec::new();
         for release in releases.lock().unwrap().iter() {
