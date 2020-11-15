@@ -109,11 +109,6 @@ impl Release {
     /// Get all releases from Github API
     /// TODO: La concurrence ne fonctionne pas bien.
     /// Les requêtes GitHub étant bloquantes, elles semblent s'exécuter séquentiellement.
-    /// Essayer avec des Futures (async) et join!() (https://rust-lang.github.io/async-book/06_multiple_futures/02_join.html)
-    /// ou https://docs.rs/futures/0.3.8/futures/future/fn.join_all.html
-    /// ou https://blog.logrocket.com/a-practical-guide-to-async-in-rust/
-    /// with missing : "use tokio::task;"
-    /// and https://github.com/tensor-programming/crawler_example/blob/master/src/main.rs
     pub async fn get_all(projects: Vec<Project>, github_username: &String, github_token: &String) -> Vec<Release> {
         let releases = Arc::new(Mutex::new(vec![]));
         let mut threads = vec![];
@@ -148,6 +143,12 @@ impl Release {
         list
     }
 
+    /// Get all releases from Github API async
+    /// Essayer avec des Futures (async) et join!() (https://rust-lang.github.io/async-book/06_multiple_futures/02_join.html)
+    /// ou https://docs.rs/futures/0.3.8/futures/future/fn.join_all.html
+    /// ou https://blog.logrocket.com/a-practical-guide-to-async-in-rust/
+    /// with missing : "use tokio::task;"
+    /// and https://github.com/tensor-programming/crawler_example/blob/master/src/main.rs
     pub async fn get_all_async(
         projects: Vec<Project>,
         github_username: &String,
