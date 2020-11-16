@@ -25,7 +25,7 @@ pub struct Project {
 
 impl Project {
     /// Get repository information from Github API
-    pub async fn get_info(self, github_username: String, github_token: String) -> Result<Release, AppError> {
+    pub async fn get_info(self, github_username: &str, github_token: &str) -> Result<Release, AppError> {
         let url = format!("https://api.github.com/repos/{}/releases/latest", self.url);
         let client = reqwest::Client::new();
         let resp = client
@@ -67,10 +67,10 @@ impl Project {
 
 impl Release {
     /// Get all releases from Github API sync
-    pub async fn get_all_sync(projects: Vec<Project>, github_username: &String, github_token: &String) -> Vec<Release> {
+    pub async fn get_all_sync(projects: Vec<Project>, github_username: &str, github_token: &str) -> Vec<Release> {
         let mut releases: Vec<Release> = Vec::new();
         for project in projects {
-            let release = project.get_info(github_username.clone(), github_token.clone()).await;
+            let release = project.get_info(github_username, github_token).await;
             match release {
                 Ok(r) => releases.push(r),
                 _ => error!("Error when getting project information"),
@@ -80,21 +80,12 @@ impl Release {
     }
 
     /// Get all releases from Github API async
-    pub async fn get_all_async(
-        projects: Vec<Project>,
-        github_username: &String,
-        github_token: &String,
-    ) -> Vec<Release> {
+    pub async fn get_all_async(projects: Vec<Project>, github_username: &str, github_token: &str) -> Vec<Release> {
         let num_futures: Vec<_> = projects
-            .iter()
-            .map(|p| {
-                let pp: Project = p.clone();
-                pp.get_info(github_username.clone(), github_token.clone())
-            })
+            .into_iter()
+            .map(|project| project.get_info(github_username, github_token))
             .collect();
 
-        let result = try_join_all(num_futures).await.unwrap();
-
-        result
+        try_join_all(num_futures).await.unwrap_or_else(|_| Vec::new())
     }
 }

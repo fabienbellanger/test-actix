@@ -39,10 +39,10 @@ pub struct LoginResponse {
 }
 
 #[derive(Serialize, Deserialize)]
-// TODO: Supprimer et mettre dans impl User
 pub struct UserList(pub Vec<User>);
 
 impl User {
+    /// User login
     pub fn login(connection: &MysqlConnection, user_login: Login) -> Result<Self, diesel::result::Error> {
         use crate::db::schema::users::dsl::*;
 
@@ -53,6 +53,7 @@ impl User {
             .get_result::<User>(connection)
     }
 
+    /// User creation
     pub fn create(connection: &MysqlConnection, new_user: NewUser) -> Result<Self, diesel::result::Error> {
         let user = User {
             id: Uuid::new_v4().to_string(),
@@ -67,11 +68,13 @@ impl User {
         Ok(user)
     }
 
+    /// Get user by ID
     pub fn get_by_id(connection: &MysqlConnection, user_id: String) -> Result<Self, diesel::result::Error> {
         use crate::db::schema::users::dsl::*;
         users.find(user_id).get_result::<User>(connection)
     }
 
+    /// Delete a user
     pub fn delete(connection: &MysqlConnection, user_id: String) -> Result<usize, diesel::result::Error> {
         use crate::db::schema::users::dsl::*;
 
@@ -79,6 +82,7 @@ impl User {
         Ok(num_deleted)
     }
 
+    /// Update user information
     pub fn update(
         connection: &MysqlConnection,
         user_id: String,
@@ -94,8 +98,8 @@ impl User {
     }
 }
 
-// TODO: Supprimer et mettre dans impl User
 impl UserList {
+    /// List of users
     pub fn list(connection: &MysqlConnection) -> Result<Self, diesel::result::Error> {
         use crate::db::schema::users::dsl::*;
 
