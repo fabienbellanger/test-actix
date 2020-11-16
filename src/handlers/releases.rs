@@ -57,13 +57,24 @@ pub async fn github_all(data: web::Data<AppState>) -> Result<HttpResponse, AppEr
     Ok(HttpResponse::Ok().json(releases))
 }
 
-// Route: GET "/github/sync"
-// curl -H "Content-Type: application/json" http://127.0.0.1:8089/github/all
+// Route: GET "/github/async"
+// curl -H "Content-Type: application/json" http://127.0.0.1:8089/github/async
 pub async fn github_async(data: web::Data<AppState>) -> Result<HttpResponse, AppError> {
     // TODO: Gérer les erreurs et mettre dans une méthode
     let projects: Vec<Project> = serde_json::from_reader(File::open("projects.json").unwrap()).unwrap();
 
     let releases = Release::get_all_async(projects, &data.github_api_username, &data.github_api_token).await;
+
+    Ok(HttpResponse::Ok().json(releases))
+}
+
+// Route: GET "/github/sync"
+// curl -H "Content-Type: application/json" http://127.0.0.1:8089/github/sync
+pub async fn github_sync(data: web::Data<AppState>) -> Result<HttpResponse, AppError> {
+    // TODO: Gérer les erreurs et mettre dans une méthode
+    let projects: Vec<Project> = serde_json::from_reader(File::open("projects.json").unwrap()).unwrap();
+
+    let releases = Release::get_all_sync(projects, &data.github_api_username, &data.github_api_token).await;
 
     Ok(HttpResponse::Ok().json(releases))
 }

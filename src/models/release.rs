@@ -143,6 +143,21 @@ impl Release {
         list
     }
 
+    /// Get all releases from Github API sync
+    pub async fn get_all_sync(projects: Vec<Project>, github_username: &String, github_token: &String) -> Vec<Release> {
+        let mut releases: Vec<Release> = Vec::new();
+        for project in projects {
+            let release = project
+                .get_info_async(github_username.clone(), github_token.clone())
+                .await;
+            match release {
+                Ok(r) => releases.push(r),
+                _ => error!("Error when getting project information"),
+            }
+        }
+        releases
+    }
+
     /// Get all releases from Github API async
     /// Essayer avec des Futures (async) et join!() (https://rust-lang.github.io/async-book/06_multiple_futures/02_join.html)
     /// ou https://docs.rs/futures/0.3.8/futures/future/fn.join_all.html
