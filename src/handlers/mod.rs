@@ -24,10 +24,10 @@ pub async fn index() -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().body("Hello world!"))
 }
 
+// Ex: http://127.0.0.1:8089/static/index.html
 #[get("/{filename:.*}")]
 pub async fn static_file(req: HttpRequest) -> Result<NamedFile> {
-    // http://127.0.0.1:8089/static/index.html
-    let path: PathBuf = req.match_info().query("filename").parse().unwrap();
+    let path: PathBuf = req.match_info().query("filename").parse()?;
     Ok(NamedFile::open(path)?)
 }
 
