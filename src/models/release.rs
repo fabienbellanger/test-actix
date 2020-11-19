@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Release {
+    pub project: Option<Project>,
     pub name: String,
     pub tag_name: String,
     #[serde(rename(serialize = "url"))]
@@ -20,13 +21,13 @@ pub struct Release {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Project {
     pub name: String,
-    pub url: String,
+    pub repo: String,
 }
 
 impl Project {
     /// Get repository information from Github API
     pub async fn get_info(self, github_username: &str, github_token: &str) -> Result<Release, AppError> {
-        let url = format!("https://api.github.com/repos/{}/releases/latest", self.url);
+        let url = format!("https://api.github.com/repos/{}/releases/latest", self.repo);
         let client = reqwest::Client::new();
         let resp = client
             .get(&url)
@@ -42,10 +43,13 @@ impl Project {
                     message: "Github request error".to_owned(),
                 })?;
 
-                let release: Release =
-                    serde_json::from_str(&resp.to_string()).map_err(|_| AppError::InternalError {
+                let mut release: Release = serde_json::from_str(&resp.to_string()).map_err(|e| {
+                    error!("{:?}", e);
+                    AppError::InternalError {
                         message: "Error while parsing Github response".to_owned(),
-                    })?;
+                    }
+                })?;
+                release.project = Some(self);
                 Ok(release)
             }
             StatusCode::NOT_FOUND => Err(AppError::NotFound {
@@ -73,7 +77,7 @@ impl Release {
             let release = project.get_info(github_username, github_token).await;
             match release {
                 Ok(r) => releases.push(r),
-                _ => error!("Error when getting project information"),
+                Err(e) => error!("Error when getting project information: {:?}", e),
             }
         }
         releases

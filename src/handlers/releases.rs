@@ -83,6 +83,20 @@ pub async fn github_sync(data: web::Data<AppState>) -> Result<HttpResponse, AppE
             Vec::new()
         }
     };
+
+    let cache: &mut Vec<Release> = &mut *data.releases.lock().unwrap();
+    if (*cache).len() == 0 {
+        info!("Filling cache...");
+        *cache = vec![Release {
+            project: None,
+            body: String::from("body"),
+            tag_name: String::from("tag_name"),
+            html_url: String::from("html_url"),
+            created_at: String::from("created_at"),
+            published_at: String::from("published_at"),
+            name: String::from("name"),
+        }];
+    }
     let releases = Release::get_all_sync(projects, &data.github_api_username, &data.github_api_token).await;
 
     Ok(HttpResponse::Ok().json(releases))

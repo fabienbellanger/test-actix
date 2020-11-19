@@ -23,12 +23,14 @@ use actix_cors::Cors;
 use actix_web::middleware::errhandlers::ErrorHandlers;
 use actix_web::middleware::Logger;
 use actix_web::{http, App, HttpServer};
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug)]
 pub struct AppState {
     pub jwt_secret_key: String,
     pub github_api_username: String,
     pub github_api_token: String,
+    pub releases: Arc<Mutex<Vec<models::release::Release>>>,
 }
 
 #[actix_web::main]
@@ -54,6 +56,7 @@ async fn main() -> std::io::Result<()> {
                 jwt_secret_key: jwt_secret_key.clone(),
                 github_api_username: github_api_username.clone(),
                 github_api_token: github_api_token.clone(),
+                releases: Arc::new(Mutex::new(Vec::new())),
             })
             .wrap(
                 ErrorHandlers::new()
