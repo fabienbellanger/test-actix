@@ -69,7 +69,7 @@ pub async fn github_async(data: web::Data<AppState>) -> Result<HttpResponse, App
     if (*cache).releases.len() == 0 || (*cache).expired_at < now {
         info!("Filling releases cache...");
         (*cache).releases = Release::get_all_async(projects, &data.github_api_username, &data.github_api_token).await;
-        (*cache).expired_at = now + Duration::minutes(1);
+        (*cache).expired_at = now + Duration::hours(1);
     } else {
         info!("Loading releases from cache...");
     }
@@ -101,7 +101,7 @@ pub async fn github_sync(data: web::Data<AppState>) -> Result<HttpResponse, AppE
     if (*cache).releases.len() == 0 || (*cache).expired_at < now {
         info!("Filling releases cache...");
         (*cache).releases = Release::get_all_sync(projects, &data.github_api_username, &data.github_api_token).await;
-        (*cache).expired_at = now + Duration::minutes(1);
+        (*cache).expired_at = now + Duration::hours(1);
     } else {
         info!("Loading releases from cache...");
     }
