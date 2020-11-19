@@ -2,6 +2,7 @@
 
 use crate::errors::AppError;
 use actix_web::{http::StatusCode, Result};
+use chrono::{DateTime, Utc};
 use futures::future::try_join_all;
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
@@ -22,6 +23,12 @@ pub struct Release {
 pub struct Project {
     pub name: String,
     pub repo: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct ReleasesCache {
+    pub releases: Vec<Release>,
+    pub expired_at: DateTime<Utc>,
 }
 
 impl Project {
@@ -91,5 +98,15 @@ impl Release {
             .collect();
 
         try_join_all(num_futures).await.unwrap_or_else(|_| Vec::new())
+    }
+}
+
+impl ReleasesCache {
+    /// Create a new cache for releases
+    pub fn new() -> Self {
+        Self {
+            releases: Vec::new(),
+            expired_at: Utc::now(),
+        }
     }
 }

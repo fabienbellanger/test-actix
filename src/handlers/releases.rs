@@ -1,9 +1,10 @@
 //! Github handler module
 
 use crate::errors::AppError;
-use crate::models::release::{Project, Release};
+use crate::models::release::{Project, Release, ReleasesCache};
 use crate::AppState;
 use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse, Result};
+use chrono::{Duration, Utc};
 use reqwest::header::USER_AGENT;
 use serde_json;
 use std::fs::File;
@@ -62,14 +63,23 @@ pub async fn github_async(data: web::Data<AppState>) -> Result<HttpResponse, App
             Vec::new()
         }
     };
-    let releases = Release::get_all_async(projects, &data.github_api_username, &data.github_api_token).await;
 
-    Ok(HttpResponse::Ok().json(releases))
+    let cache: &mut ReleasesCache = &mut *data.releases.lock().unwrap();
+    let now = Utc::now();
+    if (*cache).releases.len() == 0 || (*cache).expired_at < now {
+        info!("Filling releases cache...");
+        (*cache).releases = Release::get_all_async(projects, &data.github_api_username, &data.github_api_token).await;
+        (*cache).expired_at = now + Duration::minutes(1);
+    } else {
+        info!("Loading releases from cache...");
+    }
+    Ok(HttpResponse::Ok().json(&(*cache).releases))
 }
 
 // Route: GET "/github/sync"
 // curl -H "Content-Type: application/json" http://127.0.0.1:8089/github/sync
 pub async fn github_sync(data: web::Data<AppState>) -> Result<HttpResponse, AppError> {
+    // TODO: Faire une méthode à la place
     let projects: Vec<Project> = match File::open("projects.json") {
         Ok(file) => match serde_json::from_reader(file) {
             Ok(f) => f,
@@ -84,20 +94,16 @@ pub async fn github_sync(data: web::Data<AppState>) -> Result<HttpResponse, AppE
         }
     };
 
-    let cache: &mut Vec<Release> = &mut *data.releases.lock().unwrap();
-    if (*cache).len() == 0 {
-        info!("Filling cache...");
-        *cache = vec![Release {
-            project: None,
-            body: String::from("body"),
-            tag_name: String::from("tag_name"),
-            html_url: String::from("html_url"),
-            created_at: String::from("created_at"),
-            published_at: String::from("published_at"),
-            name: String::from("name"),
-        }];
+    // TODO: Faire une méthode à la place
+    // Le mutex est-il nécessaire ?
+    let cache: &mut ReleasesCache = &mut *data.releases.lock().unwrap();
+    let now = Utc::now();
+    if (*cache).releases.len() == 0 || (*cache).expired_at < now {
+        info!("Filling releases cache...");
+        (*cache).releases = Release::get_all_sync(projects, &data.github_api_username, &data.github_api_token).await;
+        (*cache).expired_at = now + Duration::minutes(1);
+    } else {
+        info!("Loading releases from cache...");
     }
-    let releases = Release::get_all_sync(projects, &data.github_api_username, &data.github_api_token).await;
-
-    Ok(HttpResponse::Ok().json(releases))
+    Ok(HttpResponse::Ok().json(&(*cache).releases))
 }
