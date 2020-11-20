@@ -1,13 +1,10 @@
 //! Github handler module
 
 use crate::errors::AppError;
-use crate::models::release::{Project, Release, ReleasesCache};
+use crate::models::release::{Project, Release};
 use crate::AppState;
 use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse, Result};
-use chrono::{Duration, Utc};
 use reqwest::header::USER_AGENT;
-use serde_json;
-use std::fs::File;
 
 // Route: GET "/github/{username}/{repository}"
 // curl -H "Content-Type: application/json" http://127.0.0.1:8089/github/actix/actix-web
@@ -33,7 +30,7 @@ pub async fn github(req: HttpRequest, data: web::Data<AppState>) -> Result<HttpR
                 message: "Github request error".to_owned(),
             })?;
 
-            let release: Release = serde_json::from_str(&resp.to_string()).map_err(|_| AppError::InternalError {
+            let release: Release = serde_json::from_str(&resp).map_err(|_| AppError::InternalError {
                 message: "Error while parsing Github response".to_owned(),
             })?;
             Ok(HttpResponse::Ok().json(release))
@@ -50,60 +47,28 @@ pub async fn github(req: HttpRequest, data: web::Data<AppState>) -> Result<HttpR
 // Route: GET "/github/async"
 // curl -H "Content-Type: application/json" http://127.0.0.1:8089/github/async
 pub async fn github_async(data: web::Data<AppState>) -> Result<HttpResponse, AppError> {
-    let projects: Vec<Project> = match File::open("projects.json") {
-        Ok(file) => match serde_json::from_reader(file) {
-            Ok(f) => f,
-            Err(e) => {
-                error!("{}", e);
-                Vec::new()
-            }
-        },
+    let projects = Project::from_file("projects.json");
+    let cache = &mut data.releases.lock();
+    let mut _empty: Vec<Release> = Vec::new();
+    let releases = match cache {
+        Ok(c) => {
+            c.get_releases(
+                projects,
+                data.github_api_username.clone(),
+                data.github_api_token.clone(),
+            )
+            .await
+        }
         Err(e) => {
             error!("{}", e);
-            Vec::new()
+            _empty = Release::get_all(
+                projects,
+                &data.github_api_username.clone(),
+                &data.github_api_token.clone(),
+            )
+            .await;
+            &_empty
         }
     };
-
-    let cache: &mut ReleasesCache = &mut *data.releases.lock().unwrap();
-    let now = Utc::now();
-    if (*cache).releases.len() == 0 || (*cache).expired_at < now {
-        info!("Filling releases cache...");
-        (*cache).releases = Release::get_all_async(projects, &data.github_api_username, &data.github_api_token).await;
-        (*cache).expired_at = now + Duration::hours(1);
-    } else {
-        info!("Loading releases from cache...");
-    }
-    Ok(HttpResponse::Ok().json(&(*cache).releases))
-}
-
-// Route: GET "/github/sync"
-// curl -H "Content-Type: application/json" http://127.0.0.1:8089/github/sync
-pub async fn github_sync(data: web::Data<AppState>) -> Result<HttpResponse, AppError> {
-    // TODO: Faire une méthode à la place
-    let projects: Vec<Project> = match File::open("projects.json") {
-        Ok(file) => match serde_json::from_reader(file) {
-            Ok(f) => f,
-            Err(e) => {
-                error!("{}", e);
-                Vec::new()
-            }
-        },
-        Err(e) => {
-            error!("{}", e);
-            Vec::new()
-        }
-    };
-
-    // TODO: Faire une méthode à la place
-    // Le mutex est-il nécessaire ?
-    let cache: &mut ReleasesCache = &mut *data.releases.lock().unwrap();
-    let now = Utc::now();
-    if (*cache).releases.len() == 0 || (*cache).expired_at < now {
-        info!("Filling releases cache...");
-        (*cache).releases = Release::get_all_sync(projects, &data.github_api_username, &data.github_api_token).await;
-        (*cache).expired_at = now + Duration::hours(1);
-    } else {
-        info!("Loading releases from cache...");
-    }
-    Ok(HttpResponse::Ok().json(&(*cache).releases))
+    Ok(HttpResponse::Ok().json(releases))
 }

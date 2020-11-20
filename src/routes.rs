@@ -28,8 +28,6 @@ pub fn web(cfg: &mut web::ServiceConfig) {
         .route("/ws", web::get().to(handlers::ws::index))
         .route("/github/{user}/{repo}", web::get().to(releases::github))
         .route("/github/async", web::get().to(releases::github_async))
-        .route("/github/sync", web::get().to(releases::github_sync))
-        .service(handlers::big_json)
         .service(handlers::big_json_stream)
         .service(handlers::internal_error)
         .service(handlers::not_found)
