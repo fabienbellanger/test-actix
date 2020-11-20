@@ -33,6 +33,10 @@ pub struct ReleasesCache {
 }
 
 impl Project {
+    /// Creates a new project
+    pub fn new(name: String, repo: String) -> Self {
+        Self { name, repo }
+    }
     /// Returns projects list from JSON file
     pub fn from_file(file_name: &str) -> Vec<Self> {
         match File::open(file_name) {
@@ -51,8 +55,9 @@ impl Project {
     }
 
     /// Get repository information from Github API
-    async fn get_info(self, github_username: &str, github_token: &str) -> Result<Release, AppError> {
+    pub async fn get_info(self, github_username: &str, github_token: &str) -> Result<Release, AppError> {
         let url = format!("https://api.github.com/repos/{}/releases/latest", self.repo);
+        dbg!(&url);
         let client = reqwest::Client::new();
         let resp = client
             .get(&url)

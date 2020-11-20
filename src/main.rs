@@ -63,6 +63,7 @@ async fn main() -> std::io::Result<()> {
             .data(data.clone())
             .wrap(
                 ErrorHandlers::new()
+                    // TODO: Comportement à supprimer si erreurs gérées partout
                     .handler(http::StatusCode::NOT_FOUND, handlers::errors::render_404)
                     .handler(http::StatusCode::INTERNAL_SERVER_ERROR, handlers::errors::render_500),
             )
