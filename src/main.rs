@@ -48,6 +48,8 @@ async fn main() -> std::io::Result<()> {
     // ------
     logger::init(settings.server_log_level);
 
+    // Initialisation du state de l'application
+    // ----------------------------------------
     let data = AppState {
         jwt_secret_key: jwt_secret_key.clone(),
         github_api_username: github_api_username.clone(),

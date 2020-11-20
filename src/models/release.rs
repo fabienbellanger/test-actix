@@ -57,7 +57,6 @@ impl Project {
     /// Get repository information from Github API
     pub async fn get_info(self, github_username: &str, github_token: &str) -> Result<Release, AppError> {
         let url = format!("https://api.github.com/repos/{}/releases/latest", self.repo);
-        dbg!(&url);
         let client = reqwest::Client::new();
         let resp = client
             .get(&url)
@@ -127,7 +126,7 @@ impl ReleasesCache {
         github_api_token: String,
     ) -> &Vec<Release> {
         let now = Utc::now();
-        if (*self).releases.is_empty() || (*self).expired_at < now {
+        if (*self).releases.is_empty() || (*self).expired_at < now || (*self).releases.len() != projects.len() {
             (*self).releases = Release::get_all(projects, &github_api_username, &github_api_token).await;
             (*self).expired_at = now + Duration::hours(1);
         }

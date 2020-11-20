@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Actiw-web - Projects latest releases</title>
+</head>
+
+<body>
+    <h1>Projects latest releases</h1>
+    <p>
+        Releases number: <b>{{ _releases.len() }}</b>
+    </p>
+    <div>
+        <pre>{{ _releases|json }}</pre>
+    </div>
+    <ul>
+        {% for release in _releases %}
+            <li>
+                {% match release.project %}
+                    {% when Some with (p) %}
+                        {{ p.name }}
+                    {% when None %}
+                {% endmatch %}:
+                {{ release.tag_name }}
+            </li>
+        {% endfor %}
+    </il>
+</body>
+</html>

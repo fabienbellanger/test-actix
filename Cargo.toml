@@ -36,7 +36,7 @@ sha2 = "0.9"
 uuid = {version = "0.8", features = ["serde", "v4"]}
 
 [dependencies.askama]
-features = ["with-actix-web"]
+features = ["with-actix-web", "serde-json"]
 version = "0.10"
 
 [dependencies.diesel]
