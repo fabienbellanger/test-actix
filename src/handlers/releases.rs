@@ -1,7 +1,7 @@
 //! Github handler module
 
 use crate::errors::AppError;
-use crate::models::release::{Project, Release};
+use crate::models::release::{Project, Release, PROJECTS_FILE};
 use crate::AppState;
 use actix_web::{web, HttpRequest, HttpResponse, Result};
 use askama_actix::{Template, TemplateIntoResponse};
@@ -33,20 +33,16 @@ pub async fn github(req: HttpRequest, data: web::Data<AppState>) -> Result<HttpR
 // Route: GET "/github/async"
 // curl -H "Content-Type: application/json" http://127.0.0.1:8089/github/async
 pub async fn github_async(data: web::Data<AppState>) -> Result<HttpResponse, AppError> {
-    let projects = Project::from_file("projects.json");
     let cache = &mut data.releases.lock();
     let mut _empty: Vec<Release> = Vec::new();
     let releases = match cache {
         Ok(c) => {
-            c.get_releases(
-                projects,
-                data.github_api_username.clone(),
-                data.github_api_token.clone(),
-            )
-            .await
+            c.get_releases(data.github_api_username.clone(), data.github_api_token.clone())
+                .await
         }
         Err(e) => {
             error!("{}", e);
+            let projects = Project::from_file(PROJECTS_FILE);
             _empty = Release::get_all(
                 projects,
                 &data.github_api_username.clone(),
@@ -61,20 +57,16 @@ pub async fn github_async(data: web::Data<AppState>) -> Result<HttpResponse, App
 
 // Route: GET "/github-page"
 pub async fn github_page(data: web::Data<AppState>) -> Result<HttpResponse, AppError> {
-    let projects = Project::from_file("projects.json");
     let cache = &mut data.releases.lock();
     let mut _empty: Vec<Release> = Vec::new();
     let releases = match cache {
         Ok(c) => {
-            c.get_releases(
-                projects,
-                data.github_api_username.clone(),
-                data.github_api_token.clone(),
-            )
-            .await
+            c.get_releases(data.github_api_username.clone(), data.github_api_token.clone())
+                .await
         }
         Err(e) => {
             error!("{}", e);
+            let projects = Project::from_file(PROJECTS_FILE);
             _empty = Release::get_all(
                 projects,
                 &data.github_api_username.clone(),

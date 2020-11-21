@@ -8,6 +8,8 @@ use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 
+pub const PROJECTS_FILE: &str = "projects.json";
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Release {
     pub project: Option<Project>,
@@ -29,6 +31,7 @@ pub struct Project {
 #[derive(Debug, Clone)]
 pub struct ReleasesCache {
     pub releases: Vec<Release>,
+    pub projects: Vec<Project>,
     pub expired_at: DateTime<Utc>,
 }
 
@@ -116,19 +119,18 @@ impl ReleasesCache {
         Self {
             releases: Vec::new(),
             expired_at: Utc::now(),
+            projects: Vec::new(),
         }
     }
 
-    pub async fn get_releases(
-        &mut self,
-        projects: Vec<Project>,
-        github_api_username: String,
-        github_api_token: String,
-    ) -> &Vec<Release> {
+    pub async fn get_releases(&mut self, github_api_username: String, github_api_token: String) -> &Vec<Release> {
         let now = Utc::now();
-        if (*self).releases.is_empty() || (*self).expired_at < now || (*self).releases.len() != projects.len() {
-            (*self).releases = Release::get_all(projects, &github_api_username, &github_api_token).await;
+        if (*self).releases.is_empty() || (*self).expired_at < now {
+            let projects = Project::from_file(PROJECTS_FILE);
+
+            (*self).releases = Release::get_all(projects.clone(), &github_api_username, &github_api_token).await;
             (*self).expired_at = now + Duration::hours(1);
+            (*self).projects = projects;
         }
         &(*self).releases
     }
