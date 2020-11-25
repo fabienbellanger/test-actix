@@ -58,6 +58,7 @@ impl Project {
     }
 
     /// Get repository information from Github API
+    /// TODO: Revoir la gestion des erreurs et utiliser un enum plutôt qu'AppError
     pub async fn get_info(self, github_username: &str, github_token: &str) -> Result<Release, AppError> {
         let url = format!("https://api.github.com/repos/{}/releases/latest", self.repo);
         let client = reqwest::Client::new();
@@ -84,9 +85,12 @@ impl Project {
                 release.project = Some(self);
                 Ok(release)
             }
-            StatusCode::NOT_FOUND => Err(AppError::NotFound {
-                message: "Last release not found".to_owned(),
-            }),
+            StatusCode::NOT_FOUND => {
+                info!("release of {} not found", self.name);
+                Err(AppError::NotFound {
+                    message: "Last release not found".to_owned(),
+                })
+            }
             StatusCode::FORBIDDEN => {
                 let resp = resp.text().await.map_err(|_| AppError::InternalError {
                     message: "Github request error".to_owned(),

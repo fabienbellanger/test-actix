@@ -1,5 +1,9 @@
 [
     {
+        "name": "Rust",
+        "repo": "rust-lang/rust"
+    },
+    {
         "name": "Actix-web",
         "repo": "actix/actix-web"
     },
@@ -8,7 +12,19 @@
         "repo": "SergioBenitez/Rocket"
     },
     {
+        "name": "Go",
+        "repo": "golang/go"
+    },
+    {
         "name": "Fiber",
         "repo": "gofiber/fiber"
+    },
+    {
+        "name": "Echo",
+        "repo": "labstack/echo"
+    },
+    {
+        "name": "Gin",
+        "repo": "gin-gonic/gin"
     }
 ]
