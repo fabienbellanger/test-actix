@@ -26,7 +26,7 @@ pub async fn github(req: HttpRequest, data: web::Data<AppState>) -> Result<HttpR
         .await
     {
         Ok(r) => Ok(HttpResponse::Ok().json(r)),
-        Err(e) => Err(e),
+        _ => Err(AppError::InternalError { message: "".to_owned() }),
     }
 }
 

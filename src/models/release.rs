@@ -1,6 +1,5 @@
 //! Release model module
 
-use crate::errors::AppError;
 use actix_web::{http::StatusCode, Result};
 use chrono::{DateTime, Duration, Utc};
 use futures::future::try_join_all;
@@ -35,6 +34,13 @@ pub struct ReleasesCache {
     pub expired_at: DateTime<Utc>,
 }
 
+pub enum ReleaseError {
+    GithubNotFound,
+    GithubForbidden,
+    GithubUnauthorized,
+    GithubError,
+}
+
 impl Project {
     /// Creates a new project
     pub fn new(name: String, repo: String) -> Self {
@@ -59,48 +65,44 @@ impl Project {
 
     /// Get repository information from Github API
     /// TODO: Revoir la gestion des erreurs et utiliser un enum plutôt qu'AppError
-    pub async fn get_info(self, github_username: &str, github_token: &str) -> Result<Release, AppError> {
+    pub async fn get_info(self, github_username: &str, github_token: &str) -> Result<Release, ReleaseError> {
         let url = format!("https://api.github.com/repos/{}/releases/latest", self.repo);
         let client = reqwest::Client::new();
-        let resp = client
+        let _resp = client
             .get(&url)
             .header(USER_AGENT, "test-actix")
             .basic_auth(github_username, Some(github_token))
             .send()
             .await
-            .map_err(|_| AppError::Unauthorized {})?;
-
-        match resp.status() {
+            .map_err(|e| {
+                error!("{:?}", e);
+                ReleaseError::GithubUnauthorized
+            })?;
+        match _resp.status() {
             StatusCode::OK => {
-                let resp = resp.text().await.map_err(|_| AppError::InternalError {
-                    message: "Github request error".to_owned(),
-                })?;
+                let resp = _resp.text().await.map_err(|_| ReleaseError::GithubError)?;
 
                 let mut release: Release = serde_json::from_str(&resp).map_err(|e| {
                     error!("{:?}", e);
-                    AppError::InternalError {
-                        message: "Error while parsing Github response".to_owned(),
-                    }
+                    ReleaseError::GithubError
                 })?;
                 release.project = Some(self);
                 Ok(release)
             }
             StatusCode::NOT_FOUND => {
-                info!("release of {} not found", self.name);
-                Err(AppError::NotFound {
-                    message: "Last release not found".to_owned(),
-                })
+                error!("release of {} not found", self.name);
+                Err(ReleaseError::GithubNotFound)
             }
             StatusCode::FORBIDDEN => {
-                let resp = resp.text().await.map_err(|_| AppError::InternalError {
-                    message: "Github request error".to_owned(),
-                })?;
+                error!("forbidden");
+                let _resp = _resp.text().await.map_err(|_| ReleaseError::GithubError)?;
 
-                Err(AppError::InternalError { message: resp })
+                Err(ReleaseError::GithubError)
             }
-            _ => Err(AppError::InternalError {
-                message: "Github response error".to_owned(),
-            }),
+            _ => {
+                error!("error");
+                Err(ReleaseError::GithubError)
+            }
         }
     }
 }
@@ -113,6 +115,7 @@ impl Release {
             .map(|project| project.get_info(github_username, github_token))
             .collect();
 
+        // TODO: Si une future est en erreur, on retourne un vecteur vide...
         try_join_all(num_futures).await.unwrap_or_else(|_| Vec::new())
     }
 }
