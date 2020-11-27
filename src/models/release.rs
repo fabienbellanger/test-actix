@@ -2,7 +2,7 @@
 
 use actix_web::{http::StatusCode, Result};
 use chrono::{DateTime, Duration, Utc};
-use futures::future::try_join_all;
+use futures::future::join_all;
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -34,13 +34,6 @@ pub struct ReleasesCache {
     pub expired_at: DateTime<Utc>,
 }
 
-pub enum ReleaseError {
-    GithubNotFound,
-    GithubForbidden,
-    GithubUnauthorized,
-    GithubError,
-}
-
 impl Project {
     /// Creates a new project
     pub fn new(name: String, repo: String) -> Self {
@@ -64,8 +57,7 @@ impl Project {
     }
 
     /// Get repository information from Github API
-    /// TODO: Revoir la gestion des erreurs et utiliser un enum plutôt qu'AppError
-    pub async fn get_info(self, github_username: &str, github_token: &str) -> Result<Release, ReleaseError> {
+    pub async fn get_info(self, github_username: &str, github_token: &str) -> Release {
         let url = format!("https://api.github.com/repos/{}/releases/latest", self.repo);
         let client = reqwest::Client::new();
         let _resp = client
@@ -73,50 +65,73 @@ impl Project {
             .header(USER_AGENT, "test-actix")
             .basic_auth(github_username, Some(github_token))
             .send()
-            .await
-            .map_err(|e| {
-                error!("{:?}", e);
-                ReleaseError::GithubUnauthorized
-            })?;
-        match _resp.status() {
-            StatusCode::OK => {
-                let resp = _resp.text().await.map_err(|_| ReleaseError::GithubError)?;
+            .await;
 
-                let mut release: Release = serde_json::from_str(&resp).map_err(|e| {
-                    error!("{:?}", e);
-                    ReleaseError::GithubError
-                })?;
-                release.project = Some(self);
-                Ok(release)
+        match _resp {
+            Err(e) => {
+                error!("Github releases: {:?}", e);
+                Release::new()
             }
-            StatusCode::NOT_FOUND => {
-                error!("release of {} not found", self.name);
-                Err(ReleaseError::GithubNotFound)
-            }
-            StatusCode::FORBIDDEN => {
-                error!("forbidden");
-                let _resp = _resp.text().await.map_err(|_| ReleaseError::GithubError)?;
+            Ok(resp) => match resp.status() {
+                StatusCode::OK => {
+                    let resp = resp.text().await;
 
-                Err(ReleaseError::GithubError)
-            }
-            _ => {
-                error!("error");
-                Err(ReleaseError::GithubError)
-            }
+                    match resp {
+                        Err(e) => {
+                            error!("Github releases: {:?}", e);
+                            Release::new()
+                        }
+                        Ok(resp) => {
+                            let release: Result<Release, serde_json::Error> = serde_json::from_str(&resp);
+
+                            match release {
+                                Err(e) => {
+                                    error!("Github releases: {:?}", e);
+                                    Release::new()
+                                }
+                                Ok(mut release) => {
+                                    release.project = Some(self);
+                                    release
+                                }
+                            }
+                        }
+                    }
+                }
+                _ => {
+                    error!("Github API error for project {:?}", self);
+                    Release::new()
+                }
+            },
         }
     }
 }
 
 impl Release {
+    /// New Release
+    fn new() -> Self {
+        Self {
+            project: None,
+            name: String::from(""),
+            tag_name: String::from(""),
+            html_url: String::from(""),
+            body: String::from(""),
+            created_at: String::from(""),
+            published_at: String::from(""),
+        }
+    }
+
     /// Get all releases from Github API async
-    pub async fn get_all(projects: Vec<Project>, github_username: &str, github_token: &str) -> Vec<Release> {
+    pub async fn get_all(projects: Vec<Project>, github_username: &str, github_token: &str) -> Vec<Self> {
         let num_futures: Vec<_> = projects
             .into_iter()
             .map(|project| project.get_info(github_username, github_token))
             .collect();
 
-        // TODO: Si une future est en erreur, on retourne un vecteur vide...
-        try_join_all(num_futures).await.unwrap_or_else(|_| Vec::new())
+        join_all(num_futures)
+            .await
+            .into_iter()
+            .filter(|release| release.project.is_some())
+            .collect()
     }
 }
 

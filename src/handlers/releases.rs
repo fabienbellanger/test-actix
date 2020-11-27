@@ -21,13 +21,10 @@ pub async fn github(req: HttpRequest, data: web::Data<AppState>) -> Result<HttpR
     };
 
     let project = Project::new(repo.clone(), format!("{}/{}", user, repo));
-    match project
+    let release = project
         .get_info(&data.github_api_username, &data.github_api_token)
-        .await
-    {
-        Ok(r) => Ok(HttpResponse::Ok().json(r)),
-        _ => Err(AppError::InternalError { message: "".to_owned() }),
-    }
+        .await;
+    Ok(HttpResponse::Ok().json(release))
 }
 
 // Route: GET "/github/async"
