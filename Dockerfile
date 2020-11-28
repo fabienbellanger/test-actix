@@ -1,4 +1,4 @@
-FROM rust:latest as build
+FROM rust:1.48 as build
 ENV PKG_CONFIG_ALLOW_CROSS=1
 
 WORKDIR /usr/src/test-actix
