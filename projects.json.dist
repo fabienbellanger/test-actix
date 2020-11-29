@@ -26,5 +26,13 @@
     {
         "name": "Gin",
         "repo": "gin-gonic/gin"
+    },
+    {
+        "name": "PHP",
+        "repo": "php-src/releases"
+    },
+    {
+        "name": "Laravel",
+        "repo": "laravel/laravel"
     }
 ]
