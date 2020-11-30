@@ -1,38 +1,47 @@
 [
     {
         "name": "Rust",
-        "repo": "rust-lang/rust"
+        "repo": "rust-lang/rust",
+        "language": "Rust"
     },
     {
         "name": "Actix-web",
-        "repo": "actix/actix-web"
+        "repo": "actix/actix-web",
+        "language": "Rust"
     },
     {
         "name": "Rocket",
-        "repo": "SergioBenitez/Rocket"
+        "repo": "SergioBenitez/Rocket",
+        "language": "Rust"
     },
     {
         "name": "Go",
-        "repo": "golang/go"
+        "repo": "golang/go",
+        "language": "Go"
     },
     {
         "name": "Fiber",
-        "repo": "gofiber/fiber"
+        "repo": "gofiber/fiber",
+        "language": "Go"
     },
     {
         "name": "Echo",
-        "repo": "labstack/echo"
+        "repo": "labstack/echo",
+        "language": "Go"
     },
     {
         "name": "Gin",
-        "repo": "gin-gonic/gin"
+        "repo": "gin-gonic/gin",
+        "language": "Go"
     },
     {
         "name": "PHP",
-        "repo": "php-src/releases"
+        "repo": "php-src/releases",
+        "language": "PHP"
     },
     {
         "name": "Laravel",
-        "repo": "laravel/laravel"
+        "repo": "laravel/laravel",
+        "language": "PHP"
     }
 ]

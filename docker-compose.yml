@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api:
+    container_name: actix-api
+    build: .
+    ports: 
+      - "8090:8089"
+    restart: on-failure
+    depends_on:
+      - mysql
+    networks:
+      - actix_bridge
+
+  mysql:
+    container_name: actix-mysql
+    image: mysql:5.7
+    restart: on-failure
+    volumes:
+      - actix_data_mysql:/var/lib/mysql:delegated
+    environment:
+      MYSQL_DATABASE: actix
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - actix_bridge
+
+networks:
+  actix_bridge:
+    driver: bridge
+
+volumes:
+  actix_data_mysql:
+    driver: local

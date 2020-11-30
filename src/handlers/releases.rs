@@ -7,7 +7,7 @@ use actix_web::{web, HttpRequest, HttpResponse, Result};
 use askama_actix::{Template, TemplateIntoResponse};
 
 #[derive(Template)]
-#[template(path = "github.html")]
+#[template(path = "github.html", print = "none")]
 struct GithubTemplate<'a> {
     _releases: &'a Vec<Release>,
 }
@@ -20,7 +20,7 @@ pub async fn github(req: HttpRequest, data: web::Data<AppState>) -> Result<HttpR
         Err(e) => return Err(AppError::BadRequest { message: e.to_string() }),
     };
 
-    let project = Project::new(repo.clone(), format!("{}/{}", user, repo));
+    let project = Project::new(repo.clone(), format!("{}/{}", user, repo), "Unknown".to_owned());
     let release = project
         .get_info(&data.github_api_username, &data.github_api_token)
         .await;

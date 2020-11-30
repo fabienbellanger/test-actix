@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <div class="container-fluid my-3">
+    <div class="container my-3">
         <h1 class="mb-4">Projects</h1>
 
         {% if _releases.len() == 0 %}
@@ -21,10 +21,11 @@
                    aria-describedby="Latest releases of Githyb projets">
                 <thead>
                     <tr>
+                        <th scope="col" width="120px">Language</th>
                         <th scope="col">Project</th>
-                        <th scope="col">Release</th>
-                        <th scope="col">Created at</th>
-                        <th scope="col">Published at</th>
+                        <th scope="col" width="120px">Release</th>
+                        <th scope="col" width="200px">Created at</th>
+                        <th scope="col" width="200px">Published at</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,6 +33,17 @@
                     {% match release.project %}
                         {% when Some with (project) %}
                             <tr>
+                                <td>
+                                {% if project.language == "PHP".to_owned() %}
+                                    <span class="badge badge-primary">{{ project.language|upper }}</span>
+                                {% else if project.language == "Go".to_owned() %}
+                                    <span class="badge badge-info">{{ project.language|upper }}</span>
+                                {% else if project.language == "Rust".to_owned() %}
+                                    <span class="badge badge-warning">{{ project.language|upper }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ project.language|upper }}</span>
+                                {% endif %}
+                                </td>
                                 <td><a href="https://github.com/{{ project.repo }}" target="_blank">{{ project.name }}</a></td>
                                 <td><a href="{{ release.html_url }}" target="_blank">{{ release.tag_name }}</a></td>
                                 <td class="datetime">{{ release.created_at }}</td>

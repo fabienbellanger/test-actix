@@ -25,6 +25,7 @@ pub struct Release {
 pub struct Project {
     pub name: String,
     pub repo: String,
+    pub language: String,
 }
 
 #[derive(Debug, Clone)]
@@ -36,8 +37,8 @@ pub struct ReleasesCache {
 
 impl Project {
     /// Creates a new project
-    pub fn new(name: String, repo: String) -> Self {
-        Self { name, repo }
+    pub fn new(name: String, repo: String, language: String) -> Self {
+        Self { name, repo, language }
     }
     /// Returns projects list from JSON file
     pub fn from_file(file_name: &str) -> Vec<Self> {
