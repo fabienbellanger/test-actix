@@ -20,6 +20,5 @@ WORKDIR /app
 COPY --from=build /app/target/debug/test-actix .
 COPY --from=build /app/.env .
 COPY --from=build /app/projects.json .
-RUN ls -lh .
 
 CMD ["test-actix"]
