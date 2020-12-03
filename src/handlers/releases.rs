@@ -5,11 +5,13 @@ use crate::models::release::{Project, Release, PROJECTS_FILE};
 use crate::AppState;
 use actix_web::{web, HttpRequest, HttpResponse, Result};
 use askama_actix::{Template, TemplateIntoResponse};
+use chrono::Utc;
 
 #[derive(Template)]
 #[template(path = "github.html", print = "none")]
 struct GithubTemplate<'a> {
     _releases: &'a Vec<Release>,
+    cache_expired_at: String,
 }
 
 // Route: GET "/github/{username}/{repository}"
@@ -32,7 +34,7 @@ pub async fn github(req: HttpRequest, data: web::Data<AppState>) -> Result<HttpR
 pub async fn github_async(data: web::Data<AppState>) -> Result<HttpResponse, AppError> {
     let cache = &mut data.releases.lock();
     let mut _empty: Vec<Release> = Vec::new();
-    let releases = match cache {
+    let (releases, _) = match cache {
         Ok(c) => {
             c.get_releases(data.github_api_username.clone(), data.github_api_token.clone())
                 .await
@@ -46,7 +48,7 @@ pub async fn github_async(data: web::Data<AppState>) -> Result<HttpResponse, App
                 &data.github_api_token.clone(),
             )
             .await;
-            &_empty
+            (&_empty, Utc::now())
         }
     };
     Ok(HttpResponse::Ok().json(releases))
@@ -56,7 +58,7 @@ pub async fn github_async(data: web::Data<AppState>) -> Result<HttpResponse, App
 pub async fn github_page(data: web::Data<AppState>) -> Result<HttpResponse, AppError> {
     let cache = &mut data.releases.lock();
     let mut _empty: Vec<Release> = Vec::new();
-    let releases = match cache {
+    let (releases, cache_expired_at) = match cache {
         Ok(c) => {
             c.get_releases(data.github_api_username.clone(), data.github_api_token.clone())
                 .await
@@ -70,10 +72,15 @@ pub async fn github_page(data: web::Data<AppState>) -> Result<HttpResponse, AppE
                 &data.github_api_token.clone(),
             )
             .await;
-            &_empty
+            (&_empty, Utc::now())
         }
     };
-    GithubTemplate { _releases: releases }.into_response().map_err(|e| {
+    GithubTemplate {
+        _releases: releases,
+        cache_expired_at: cache_expired_at.to_rfc2822(),
+    }
+    .into_response()
+    .map_err(|e| {
         error!("{}", e);
         AppError::InternalError {
             message: "Failed to load GithubTemplate.".to_owned(),

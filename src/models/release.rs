@@ -146,7 +146,12 @@ impl ReleasesCache {
         }
     }
 
-    pub async fn get_releases(&mut self, github_api_username: String, github_api_token: String) -> &Vec<Release> {
+    /// Get releases from Github
+    pub async fn get_releases(
+        &mut self,
+        github_api_username: String,
+        github_api_token: String,
+    ) -> (&Vec<Release>, DateTime<Utc>) {
         let now = Utc::now();
         if (*self).releases.is_empty() || (*self).expired_at < now {
             let projects = Project::from_file(PROJECTS_FILE);
@@ -155,7 +160,7 @@ impl ReleasesCache {
             (*self).expired_at = now + Duration::hours(1);
             (*self).projects = projects;
         }
-        &(*self).releases
+        (&(*self).releases, (*self).expired_at)
     }
 }
 
