@@ -39,7 +39,7 @@ pub struct AppState {
 async fn main() -> Result<()> {
     // Load configuration
     // ------------------
-    let settings = Config::load().expect("Cannot find or invalid .env file");
+    let settings = Config::from_env().expect("Cannot find or invalid .env file");
     let db_url = settings.database_url;
     let jwt_secret_key = settings.jwt_secret_key;
     let github_api_username = settings.github_api_username;

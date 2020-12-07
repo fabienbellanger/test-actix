@@ -18,8 +18,8 @@ pub struct Config {
 }
 
 impl Config {
-    /// Load environment configuration
-    pub fn load() -> Result<Config> {
+    /// from_env loads configuration from environment variables
+    pub fn from_env() -> Result<Config> {
         dotenv::dotenv().ok();
 
         let mut c = config::Config::new();
