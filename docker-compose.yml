@@ -6,7 +6,7 @@ services:
     build: .
     ports: 
       - "8090:8089"
-    restart: on-failure
+    restart: none # on-failure
     depends_on:
       - mysql
     networks:
@@ -15,7 +15,7 @@ services:
   mysql:
     container_name: actix-mysql
     image: mysql:5.7
-    restart: on-failure
+    restart: none # on-failure
     volumes:
       - actix_data_mysql:/var/lib/mysql:delegated
     environment:
