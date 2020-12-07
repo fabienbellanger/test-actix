@@ -3,6 +3,7 @@
 use crate::handlers;
 use crate::handlers::{releases, users};
 use crate::middlewares;
+use actix_files as fs;
 use actix_web::{guard, web};
 
 /// Defines API's routes
@@ -38,7 +39,7 @@ pub fn web(cfg: &mut web::ServiceConfig) {
         .service(handlers::json)
         .service(handlers::query)
         .service(handlers::templates)
-        .service(handlers::static_file)
+        .service(fs::Files::new("/assets", "./static"))
         .service(
             web::resource("/path").route(
                 web::route()

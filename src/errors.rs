@@ -23,8 +23,6 @@ pub enum AppError {
     BadRequest { message: String },
     #[display(fmt = "{}", message)]
     NotFound { message: String },
-    #[display(fmt = "Timeout")]
-    Timeout,
     #[display(fmt = "Unauthorized")]
     Unauthorized,
 }
@@ -36,7 +34,6 @@ impl AppError {
             Self::BadRequest { message: m } => m.to_owned(),
             Self::Unauthorized => "Unauthorized".to_owned(),
             Self::InternalError { message: m } => m.to_owned(),
-            Self::Timeout => "Bad Gateway".to_owned(),
         }
     }
 }
@@ -58,7 +55,6 @@ impl error::ResponseError for AppError {
             AppError::BadRequest { .. } => StatusCode::BAD_REQUEST,
             AppError::Unauthorized => StatusCode::UNAUTHORIZED,
             AppError::NotFound { .. } => StatusCode::NOT_FOUND,
-            AppError::Timeout => StatusCode::GATEWAY_TIMEOUT,
         }
     }
 }

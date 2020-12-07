@@ -66,9 +66,12 @@ async fn main() -> Result<()> {
             .data(data.clone())
             .wrap(
                 ErrorHandlers::new()
-                    // TODO: Comportement à supprimer si erreurs gérées partout
-                    .handler(http::StatusCode::NOT_FOUND, handlers::errors::render_404)
-                    .handler(http::StatusCode::INTERNAL_SERVER_ERROR, handlers::errors::render_500),
+                    .handler(http::StatusCode::UNAUTHORIZED, handlers::errors::render_401)
+                    .handler(http::StatusCode::FORBIDDEN, handlers::errors::render_403)
+                    .handler(http::StatusCode::REQUEST_TIMEOUT, handlers::errors::render_408)
+                    .handler(http::StatusCode::BAD_GATEWAY, handlers::errors::render_502)
+                    .handler(http::StatusCode::SERVICE_UNAVAILABLE, handlers::errors::render_503)
+                    .handler(http::StatusCode::GATEWAY_TIMEOUT, handlers::errors::render_504),
             )
             .wrap(Logger::new("%s | %r | %Ts | %{User-Agent}i | %a"))
             .wrap(
