@@ -26,6 +26,7 @@ pub async fn index() -> Result<impl Responder, AppError> {
 }
 
 // Ex: http://127.0.0.1:8089/static/index.html
+// TODO: Pas sécurisé du tout : http://localhost:8089/src/main.rs !!!!
 #[get("/{filename:.*}")]
 pub async fn static_file(req: HttpRequest) -> actix_web::Result<NamedFile> {
     let path: PathBuf = req.match_info().query("filename").parse()?;

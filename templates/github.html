@@ -76,21 +76,6 @@
         crossorigin="anonymous"></script>
     <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
-    <script>
-        $(function () {
-            $('.datetime').each(function () {
-                $(this).html(moment($(this).text()).format('YYYY-MM-DD HH:mm'));
-            });
-
-            $('#releases').DataTable({
-                'pageLength': 25,
-                'order': [[3, 'desc']],
-            });
-
-            const expiredAt = moment($("#cacheExpiredAt").text());
-            const duration  = moment.duration(expiredAt.diff(moment())).humanize(true);
-            $('#cacheExpiredAt').html(duration);
-        });
-    </script>
+    <script src="/static/js/github.js"></script>
 </body>
 </html>
