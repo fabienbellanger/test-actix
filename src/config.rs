@@ -19,6 +19,7 @@ pub struct Config {
 
 impl Config {
     /// Load environment configuration
+    // #[instrument]
     pub fn load() -> Result<Config> {
         dotenv::dotenv().ok();
 

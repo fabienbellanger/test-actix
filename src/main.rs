@@ -13,7 +13,7 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 #[macro_use]
-extern crate log;
+extern crate tracing;
 
 extern crate chrono;
 extern crate serde;
@@ -36,6 +36,7 @@ pub struct AppState {
 }
 
 #[actix_web::main]
+#[instrument]
 async fn main() -> Result<()> {
     // Load configuration
     // ------------------
