@@ -3,7 +3,8 @@
 pub mod schema;
 
 use crate::errors::AppError;
-use actix_web::{web, Result};
+use actix_web::web;
+use color_eyre::Result;
 use diesel::mysql::MysqlConnection;
 use diesel::r2d2::{ConnectionManager, Pool, PoolError, PooledConnection};
 

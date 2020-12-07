@@ -24,6 +24,7 @@ use actix_cors::Cors;
 use actix_web::middleware::errhandlers::ErrorHandlers;
 use actix_web::middleware::Logger;
 use actix_web::{http, App, HttpServer};
+use color_eyre::Result;
 use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
@@ -35,10 +36,10 @@ pub struct AppState {
 }
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<()> {
     // Load configuration
     // ------------------
-    let settings = Config::load().expect("Cannot find .env file");
+    let settings = Config::load().expect("Cannot find or invalid .env file");
     let db_url = settings.database_url;
     let jwt_secret_key = settings.jwt_secret_key;
     let github_api_username = settings.github_api_username;
@@ -86,5 +87,7 @@ async fn main() -> std::io::Result<()> {
     })
     .bind(format!("{}:{}", settings.server_url, settings.server_port))?
     .run()
-    .await
+    .await?;
+
+    Ok(())
 }

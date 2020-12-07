@@ -2,6 +2,7 @@
 
 use actix::{Actor, ActorContext, StreamHandler};
 use actix_web_actors::ws;
+use color_eyre::Result;
 
 /// Define HTTP actor
 pub struct WebSocket;

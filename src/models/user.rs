@@ -1,4 +1,5 @@
 use crate::db::schema::users;
+use color_eyre::Result;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha512};

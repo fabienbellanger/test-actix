@@ -3,6 +3,7 @@ pub mod release;
 pub mod user;
 
 use actix_web::{web::Bytes, Error};
+use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::pin::Pin;
 use std::task::{Context, Poll};

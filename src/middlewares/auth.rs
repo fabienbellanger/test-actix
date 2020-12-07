@@ -11,6 +11,7 @@ use actix_web::{
     web::Data,
     Error, HttpResponse,
 };
+use color_eyre::Result;
 use futures::{
     future::{ok, Ready},
     Future,

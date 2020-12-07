@@ -6,8 +6,9 @@ use crate::errors::AppError;
 use crate::models::auth::JWT;
 use crate::models::user::{Login, LoginResponse, NewUser, User, UserList};
 use crate::AppState;
-use actix_web::{web, HttpRequest, HttpResponse, Result};
+use actix_web::{web, HttpRequest, HttpResponse};
 use chrono::prelude::*;
+use color_eyre::Result;
 
 // Route: POST "/login"
 // curl -H "Content-Type: application/json" -X POST http://127.0.0.1:8089/v1/login \

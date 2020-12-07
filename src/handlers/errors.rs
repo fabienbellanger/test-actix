@@ -3,6 +3,7 @@
 use actix_web::middleware::errhandlers::ErrorHandlerResponse;
 use actix_web::{body::Body, body::ResponseBody, dev, http};
 use actix_web::{error, http::StatusCode};
+use color_eyre::Result;
 use serde_json::json;
 
 /// Render 404 error

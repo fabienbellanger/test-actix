@@ -3,9 +3,10 @@
 use crate::errors::AppError;
 use crate::models::release::{Project, Release, PROJECTS_FILE};
 use crate::AppState;
-use actix_web::{web, HttpRequest, HttpResponse, Result};
+use actix_web::{web, HttpRequest, HttpResponse};
 use askama_actix::{Template, TemplateIntoResponse};
 use chrono::Utc;
+use color_eyre::Result;
 
 #[derive(Template)]
 #[template(path = "github.html", print = "none")]

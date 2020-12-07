@@ -8,8 +8,9 @@ pub mod ws;
 use crate::errors::AppError;
 use crate::models;
 use actix_files::NamedFile;
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
+use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use askama_actix::{Template, TemplateIntoResponse};
+use color_eyre::Result;
 use std::path::PathBuf;
 use std::thread;
 
@@ -26,7 +27,7 @@ pub async fn index() -> Result<impl Responder, AppError> {
 
 // Ex: http://127.0.0.1:8089/static/index.html
 #[get("/{filename:.*}")]
-pub async fn static_file(req: HttpRequest) -> Result<NamedFile> {
+pub async fn static_file(req: HttpRequest) -> actix_web::Result<NamedFile> {
     let path: PathBuf = req.match_info().query("filename").parse()?;
     Ok(NamedFile::open(path)?)
 }

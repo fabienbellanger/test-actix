@@ -1,7 +1,8 @@
 //! Release model module
 
-use actix_web::{http::StatusCode, Result};
+use actix_web::http::StatusCode;
 use chrono::{DateTime, Duration, Utc};
+use color_eyre::Result;
 use futures::future::join_all;
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};

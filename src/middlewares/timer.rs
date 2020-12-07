@@ -7,6 +7,7 @@ use std::time::SystemTime;
 use actix_http::http::header;
 use actix_service::{Service, Transform};
 use actix_web::{dev::ServiceRequest, dev::ServiceResponse, Error};
+use color_eyre::Result;
 use futures::future::{ok, Ready};
 use futures::Future;
 

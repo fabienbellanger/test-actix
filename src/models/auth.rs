@@ -1,6 +1,7 @@
 //! JWT module
 
 use chrono::Utc;
+use color_eyre::Result;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 

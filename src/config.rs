@@ -1,5 +1,7 @@
 //! Configuration module
 
+use color_eyre::Result;
+use eyre::WrapErr;
 use serde::Deserialize;
 
 /// Represents configuration structure
@@ -17,12 +19,12 @@ pub struct Config {
 
 impl Config {
     /// Load environment configuration
-    pub fn load() -> Result<Config, Box<dyn std::error::Error>> {
+    pub fn load() -> Result<Config> {
         dotenv::dotenv().ok();
 
-        let mut s = config::Config::new();
-        s.merge(config::Environment::default())?;
+        let mut c = config::Config::new();
+        c.merge(config::Environment::default())?;
 
-        Ok(s.try_into()?)
+        c.try_into().context("loading configuration from environment")
     }
 }
