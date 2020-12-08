@@ -38,10 +38,11 @@
         "name": "PHP",
         "repo": "php-src/releases",
         "language": "PHP"
+]
     },
     {
-        "name": "Laravel",
-        "repo": "laravel/laravel",
+        "name": "Symfony",
+        "repo": "symfony/symfony",
         "language": "PHP"
     }
-]
+}
