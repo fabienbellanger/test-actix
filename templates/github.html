@@ -26,8 +26,7 @@
                         <th scope="col" style="width: 120px">Language</th>
                         <th scope="col">Project</th>
                         <th scope="col" style="width: 120px">Release</th>
-                        <th scope="col" style="width: 200px">Created at</th>
-                        <th scope="col" style="width: 200px">Published at</th>
+                        <th scope="col" style="width: 240px">Published at</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,8 +47,14 @@
                                 </td>
                                 <td><a href="https://github.com/{{ project.repo }}" target="_blank">{{ project.name }}</a></td>
                                 <td><a href="{{ release.html_url }}" target="_blank">{{ release.tag_name }}</a></td>
-                                <td class="datetime">{{ release.created_at }}</td>
-                                <td class="datetime">{{ release.published_at }}</td>
+                                <td>
+                                    <span class="datetime">{{ release.published_at }}</span>
+                                    <small class="font-italic text-secondary">
+                                        (<span class="datetime-human">
+                                            {{ release.published_at }}
+                                        </span>)
+                                    </small>
+                                </td>
                             </tr>
                         {% when None %}
                     {% endmatch %}
