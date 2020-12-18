@@ -6,7 +6,9 @@ services:
     build: .
     ports: 
       - "8090:8089"
-    restart: none # on-failure
+    restart: "no" # on-failure
+    volumes:
+      - ./:/app
     depends_on:
       - mysql
     networks:
@@ -15,12 +17,14 @@ services:
   mysql:
     container_name: actix-mysql
     image: mysql:5.7
-    restart: none # on-failure
+    restart: "no" # on-failure
     volumes:
       - actix_data_mysql:/var/lib/mysql:delegated
     environment:
-      MYSQL_DATABASE: actix
-      MYSQL_ROOT_PASSWORD: root
+      - MYSQL_DATABASE=actix
+      - MYSQL_USER=actix
+      - MYSQL_PASSWORD=actix
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
     networks:
       - actix_bridge
 
