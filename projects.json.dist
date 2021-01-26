@@ -44,5 +44,15 @@
         "name": "Symfony",
         "repo": "symfony/symfony",
         "language": "PHP"
+    },
+    {
+        "name": "Buffalo",
+        "repo": "gobuffalo/buffalo",
+        "language": "Go"
+    },
+    {
+        "name": "Gorilla Mux",
+        "repo": "gorilla/mux",
+        "language": "Go"
     }
 }
