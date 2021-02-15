@@ -58,11 +58,13 @@ async fn main() -> Result<()> {
         releases: Arc::new(Mutex::new(ReleasesCache::new())),
     };
 
+    let pool = db::init(&db_url).expect("Failed to create MySQL pool.");
+
     // Start server
     // ------------
     HttpServer::new(move || {
         App::new()
-            .data(db::init(&db_url).expect("Failed to create MySQL pool."))
+            .data(pool.clone())
             .data(data.clone())
             .wrap(
                 ErrorHandlers::new()
