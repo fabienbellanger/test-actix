@@ -78,8 +78,6 @@ pub async fn create(pool: web::Data<MysqlPool>, form: web::Json<NewUser>) -> Res
 pub async fn get_users(pool: web::Data<MysqlPool>, _req: HttpRequest) -> Result<HttpResponse, AppError> {
     let mysql_pool = db::mysql_pool_handler(pool)?;
 
-    error!("Users list");
-
     let users = web::block(move || UserList::list(&mysql_pool)).await.map_err(|e| {
         error!("{}", e);
         AppError::InternalError {

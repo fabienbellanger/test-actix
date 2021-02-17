@@ -87,6 +87,7 @@ async fn main() -> Result<()> {
                     .finish(),
             )
             .wrap(middlewares::timer::Timer)
+            .wrap(middlewares::request_id::RequestId)
             .configure(routes::api)
             .configure(routes::web)
     })
