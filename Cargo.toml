@@ -35,6 +35,10 @@ reqwest = "0.10.8"
 serde = "1.0"
 serde_json = "1.0"
 sha2 = "0.9"
+tracing = "0.1"
+tracing-futures = "0.2"
+tracing-log = {version = "0.1", features = ["env_logger"]}
+tracing-subscriber = {version = "0.2", features = ["fmt"]}
 uuid = {version = "0.8", features = ["serde", "v4"]}
 
 [dependencies.askama]

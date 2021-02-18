@@ -49,6 +49,8 @@ async fn main() -> Result<()> {
     // ------
     logger::init(settings.server_log_level);
 
+    error!("coucou");
+
     // Initialisation du state de l'application
     // ----------------------------------------
     let data = AppState {
