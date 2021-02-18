@@ -26,6 +26,7 @@ pub fn api(cfg: &mut web::ServiceConfig) {
 /// Defines web's routes
 pub fn web(cfg: &mut web::ServiceConfig) {
     cfg.route("/", web::get().to(handlers::index))
+        .route("/health_check", web::get().to(handlers::health_check))
         .route("/ws", web::get().to(handlers::ws::index))
         .route("/github/{user}/{repo}", web::get().to(releases::github))
         .route("/github/async", web::get().to(releases::github_async))

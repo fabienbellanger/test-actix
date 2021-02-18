@@ -23,6 +23,11 @@ pub async fn index() -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().body("Hello world!"))
 }
 
+// Route: GET "/health_check"
+pub async fn health_check() -> Result<impl Responder, AppError> {
+    Ok(HttpResponse::Ok().finish())
+}
+
 #[get("/internal-error")]
 pub async fn internal_error() -> Result<&'static str, AppError> {
     Err(AppError::InternalError {
@@ -113,6 +118,15 @@ mod tests {
     use super::*;
     use actix_web::{test, App};
     use bytes::Bytes;
+
+    #[actix_rt::test]
+    async fn test_health_check_ok() {
+        let mut app = test::init_service(App::new().route("/health_check", web::get().to(super::health_check))).await;
+
+        let req = test::TestRequest::get().uri("/health_check").to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert!(resp.status().is_success());
+    }
 
     #[actix_rt::test]
     async fn test_hello_ok() {
