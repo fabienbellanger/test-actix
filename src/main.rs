@@ -45,11 +45,13 @@ async fn main() -> Result<()> {
     let github_api_username = settings.github_api_username;
     let github_api_token = settings.github_api_token;
 
+    // Installation de Color Eyre
+    // --------------------------
+    color_eyre::install()?;
+
     // Logger
     // ------
     logger::init(settings.server_log_level);
-
-    error!("coucou");
 
     // Initialisation du state de l'application
     // ----------------------------------------
@@ -60,6 +62,8 @@ async fn main() -> Result<()> {
         releases: Arc::new(Mutex::new(ReleasesCache::new())),
     };
 
+    // Initialisation du pool MySQL via r2d2
+    // -------------------------------------
     let pool = db::init(&db_url).expect("Failed to create MySQL pool.");
 
     // Start server
