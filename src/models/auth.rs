@@ -57,13 +57,3 @@ impl JWT {
         Ok(token.claims)
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     // use super::*;
-
-//     #[test]
-//     fn test_generate() {
-//         unimplemented!();
-//     }
-// }
