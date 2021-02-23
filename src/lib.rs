@@ -24,6 +24,7 @@ use actix_cors::Cors;
 use actix_web::middleware::errhandlers::ErrorHandlers;
 use actix_web::middleware::Logger;
 use actix_web::{http, App, HttpServer};
+use actix_web_prom::PrometheusMetrics;
 use color_eyre::Result;
 use std::sync::{Arc, Mutex};
 
@@ -65,6 +66,10 @@ pub async fn run() -> Result<()> {
     // -------------------------------------
     let pool = db::init(&db_url).expect("Failed to create MySQL pool.");
 
+    // Prometheus
+    // ----------
+    let prometheus = PrometheusMetrics::new("api", Some("/metrics"), None);
+
     // Start server
     // ------------
     HttpServer::new(move || {
@@ -80,6 +85,7 @@ pub async fn run() -> Result<()> {
                     .handler(http::StatusCode::SERVICE_UNAVAILABLE, handlers::errors::render_503)
                     .handler(http::StatusCode::GATEWAY_TIMEOUT, handlers::errors::render_504),
             )
+            .wrap(prometheus.clone())
             .wrap(Logger::new("%s | %r | %Ts | %{User-Agent}i | %a"))
             .wrap(
                 Cors::new()

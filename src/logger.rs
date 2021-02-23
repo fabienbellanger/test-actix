@@ -76,13 +76,13 @@ pub fn _init_with_tracing(level: String) {
     let format = format::debug_fn(|writer, field, value| {
         // We'll format the field name and value separated with a colon.
         if field.to_string() == "message" || field.to_string() == "log.line" {
-            write!(writer, "{}: {:?}", field, value)
+            write!(writer, " ({}: {:?}) ", field, value)
         } else {
             write!(writer, "")
         }
     })
     .display_messages()
-    .delimited(" || ");
+    .delimited("");
 
     tracing_subscriber::fmt()
         .with_thread_names(false)
