@@ -41,6 +41,7 @@ impl Project {
     pub fn new(name: String, repo: String, language: String) -> Self {
         Self { name, repo, language }
     }
+    
     /// Returns projects list from JSON file
     pub fn from_file(file_name: &str) -> Vec<Self> {
         match File::open(file_name) {
